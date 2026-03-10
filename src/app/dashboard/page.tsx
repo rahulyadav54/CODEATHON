@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
@@ -24,7 +23,7 @@ import { collection, query, where, doc } from 'firebase/firestore';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import Link from 'link';
+import Link from 'next/link';
 
 const utilizationData = [
   { name: 'Mon', usage: 65 },
