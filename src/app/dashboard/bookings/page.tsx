@@ -1,17 +1,18 @@
+
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Calendar as CalendarIcon, Clock, CheckCircle2, MoreVertical, BadgeInfo } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, BadgeInfo, Loader2 } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MockDB, BookingStatus } from '@/lib/mock-data';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import { useFirestore, useUser, useCollection, useDoc } from '@/firebase';
+import { collection, query, where, addDoc, serverTimestamp, doc } from 'firebase/firestore';
 
 const timeSlots = [
   "09:00 AM - 11:00 AM",
@@ -22,36 +23,54 @@ const timeSlots = [
 
 export default function BookingsPage() {
   const { toast } = useToast();
+  const db = useFirestore();
+  const { user } = useUser();
+  
+  const userRef = useMemo(() => user && db ? doc(db, 'users', user.uid) : null, [db, user]);
+  const { data: profile } = useDoc(userRef);
+
+  const machinesQuery = useMemo(() => db ? collection(db, 'machines') : null, [db]);
+  const { data: machines } = useCollection(machinesQuery);
+
+  const bookingsQuery = useMemo(() => 
+    db && user ? query(collection(db, 'bookings'), where('studentId', '==', user.uid)) : null,
+    [db, user]
+  );
+  const { data: myBookings, loading: loadingBookings } = useCollection(bookingsQuery);
+
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const [selectedMachine, setSelectedMachine] = useState('');
+  const [selectedMachineId, setSelectedMachineId] = useState('');
   const [selectedSlot, setSelectedSlot] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!db || !user || !profile) return;
     setIsSubmitting(true);
     
-    setTimeout(() => {
-      MockDB.addBooking({
-        id: `B${Math.floor(Math.random() * 1000)}`,
-        studentId: MockDB.currentUser.id,
-        studentName: MockDB.currentUser.name,
-        machineId: selectedMachine,
-        centerId: 'c1',
+    try {
+      const selectedMachine = machines.find(m => m.id === selectedMachineId);
+      await addDoc(collection(db, 'bookings'), {
+        studentId: user.uid,
+        studentName: profile.name || user.email?.split('@')[0],
+        machineId: selectedMachineId,
+        machineName: selectedMachine?.name || selectedMachineId,
+        centerId: selectedMachine?.centerId || 'default',
         timeSlot: selectedSlot,
-        purpose: 'Advanced Certification Module',
+        date: date?.toISOString(),
         status: 'Pending',
-        createdAt: new Date().toISOString()
+        createdAt: serverTimestamp()
       });
       
-      setIsSubmitting(false);
       toast({ title: "Booking Submitted", description: "Your request is pending trainer approval." });
-      setSelectedMachine('');
+      setSelectedMachineId('');
       setSelectedSlot('');
-    }, 1000);
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error", description: error.message });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
-
-  const myBookings = MockDB.bookings.filter(b => b.studentId === MockDB.currentUser.id);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700 pb-10">
@@ -61,8 +80,8 @@ export default function BookingsPage() {
           <p className="text-muted-foreground text-sm">Reserve equipment and track your training sessions.</p>
         </div>
         <div className="flex items-center gap-2 p-2 rounded-xl bg-white/5 border border-white/10">
-           <Badge variant="outline" className="bg-primary/10 text-primary border-0 rounded-lg">{MockDB.currentUser.skillLevel}</Badge>
-           <span className="text-xs font-bold text-muted-foreground">{MockDB.currentUser.totalHours} hrs trained</span>
+           <Badge variant="outline" className="bg-primary/10 text-primary border-0 rounded-lg">{profile?.skillLevel || 'Beginner'}</Badge>
+           <span className="text-xs font-bold text-muted-foreground">{profile?.totalHours || 0} hrs trained</span>
         </div>
       </div>
 
@@ -78,12 +97,12 @@ export default function BookingsPage() {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Target Machine</Label>
-                    <Select onValueChange={setSelectedMachine} value={selectedMachine}>
+                    <Select onValueChange={setSelectedMachineId} value={selectedMachineId}>
                       <SelectTrigger className="bg-white/5 border-white/10 rounded-xl h-11">
                         <SelectValue placeholder="Choose equipment" />
                       </SelectTrigger>
                       <SelectContent>
-                        {MockDB.machines.filter(m => m.status === 'Available').map(m => (
+                        {machines.filter(m => m.status === 'Available').map(m => (
                           <SelectItem key={m.id} value={m.id}>{m.name} ({m.type})</SelectItem>
                         ))}
                       </SelectContent>
@@ -100,7 +119,7 @@ export default function BookingsPage() {
                           variant={selectedSlot === slot ? 'default' : 'outline'}
                           className={cn(
                             "justify-start rounded-xl h-11 px-4 border-white/10",
-                            selectedSlot === slot ? "bg-primary border-0" : "bg-white/5 hover:bg-white/10"
+                            selectedSlot === slot ? "bg-primary border-0 text-white" : "bg-white/5 hover:bg-white/10"
                           )}
                           onClick={() => setSelectedSlot(slot)}
                         >
@@ -121,8 +140,8 @@ export default function BookingsPage() {
               </div>
 
               <div className="pt-4">
-                <Button size="lg" className="w-full tech-gradient border-0 rounded-xl h-12 text-sm font-bold" disabled={!selectedMachine || !selectedSlot || isSubmitting}>
-                  {isSubmitting ? "Processing..." : "Submit for Approval"}
+                <Button size="lg" className="w-full tech-gradient border-0 rounded-xl h-12 text-sm font-bold" disabled={!selectedMachineId || !selectedSlot || isSubmitting}>
+                  {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Submit for Approval"}
                 </Button>
               </div>
             </form>
@@ -135,29 +154,30 @@ export default function BookingsPage() {
                <CardTitle className="text-lg font-headline">Booking Status</CardTitle>
              </CardHeader>
              <CardContent className="space-y-4">
-               {myBookings.map(booking => (
-                 <div key={booking.id} className="p-4 rounded-2xl bg-white/5 border border-white/5 group">
-                   <div className="flex items-center justify-between mb-3">
-                     <Badge className={cn(
-                       "rounded-md text-[10px] border-0",
-                       booking.status === 'Approved' ? 'bg-green-500/10 text-green-500' :
-                       booking.status === 'Pending' ? 'bg-yellow-500/10 text-yellow-500' :
-                       'bg-red-500/10 text-red-500'
-                     )}>
-                       {booking.status}
-                     </Badge>
-                     <span className="text-[10px] font-mono text-primary font-bold">{booking.id}</span>
+               {loadingBookings ? (
+                 <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+               ) : (
+                 myBookings.map(booking => (
+                   <div key={booking.id} className="p-4 rounded-2xl bg-white/5 border border-white/5 group">
+                     <div className="flex items-center justify-between mb-3">
+                       <Badge className={cn(
+                         "rounded-md text-[10px] border-0",
+                         booking.status === 'Approved' ? 'bg-green-500/10 text-green-500' :
+                         booking.status === 'Pending' ? 'bg-yellow-500/10 text-yellow-500' :
+                         'bg-red-500/10 text-red-500'
+                       )}>
+                         {booking.status}
+                       </Badge>
+                       <span className="text-[10px] font-mono text-primary font-bold">#{booking.id.slice(0, 4)}</span>
+                     </div>
+                     <h4 className="font-bold text-sm text-white group-hover:text-primary transition-colors">{booking.machineName || booking.machineId}</h4>
+                     <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
+                       <CalendarIcon className="h-3 w-3" /> {booking.date ? new Date(booking.date).toLocaleDateString() : 'N/A'} • {booking.timeSlot}
+                     </p>
                    </div>
-                   <h4 className="font-bold text-sm text-white group-hover:text-primary transition-colors">{booking.machineId}</h4>
-                   <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-                     <CalendarIcon className="h-3 w-3" /> {new Date(booking.createdAt).toLocaleDateString()} • {booking.timeSlot}
-                   </p>
-                   {booking.status === 'Approved' && (
-                     <Button variant="link" className="p-0 h-auto text-[10px] text-primary mt-2">View Machine Telemetry</Button>
-                   )}
-                 </div>
-               ))}
-               {myBookings.length === 0 && <p className="text-xs text-center text-muted-foreground py-4">No active bookings found.</p>}
+                 ))
+               )}
+               {!loadingBookings && myBookings.length === 0 && <p className="text-xs text-center text-muted-foreground py-4">No active bookings found.</p>}
              </CardContent>
            </Card>
 

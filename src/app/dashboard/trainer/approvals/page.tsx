@@ -1,26 +1,38 @@
+
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle2, XCircle, User as UserIcon, Calendar, Clock, GraduationCap } from 'lucide-react';
-import { MockDB, Booking, BookingStatus } from '@/lib/mock-data';
+import { CheckCircle2, XCircle, User as UserIcon, Calendar, Clock, GraduationCap, Loader2 } from 'lucide-react';
+import { useFirestore, useCollection } from '@/firebase';
+import { collection, query, where, updateDoc, doc } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
 export default function TrainerApprovalsPage() {
   const { toast } = useToast();
-  const [bookings, setBookings] = useState<Booking[]>(MockDB.bookings.filter(b => b.status === 'Pending'));
+  const db = useFirestore();
 
-  const handleAction = (id: string, status: BookingStatus) => {
-    MockDB.updateBookingStatus(id, status);
-    setBookings(prev => prev.filter(b => b.id !== id));
-    toast({
-      title: `Booking ${status}`,
-      description: `Student request ${id} has been ${status.toLowerCase()}.`
-    });
+  const pendingQuery = useMemo(() => 
+    db ? query(collection(db, 'bookings'), where('status', '==', 'Pending')) : null,
+    [db]
+  );
+  const { data: bookings, loading } = useCollection(pendingQuery);
+
+  const handleAction = async (id: string, status: 'Approved' | 'Rejected') => {
+    if (!db) return;
+    try {
+      await updateDoc(doc(db, 'bookings', id), { status });
+      toast({
+        title: `Booking ${status}`,
+        description: `Request ${id.slice(0, 4)} has been ${status.toLowerCase()}.`
+      });
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Error", description: error.message });
+    }
   };
 
   return (
@@ -45,42 +57,32 @@ export default function TrainerApprovalsPage() {
                       <TableHead className="text-[10px] uppercase font-bold tracking-widest">Student</TableHead>
                       <TableHead className="text-[10px] uppercase font-bold tracking-widest">Machine</TableHead>
                       <TableHead className="text-[10px] uppercase font-bold tracking-widest">Time Slot</TableHead>
-                      <TableHead className="text-[10px] uppercase font-bold tracking-widest">Skill Level</TableHead>
                       <TableHead className="text-right text-[10px] uppercase font-bold tracking-widest">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {bookings.map((b) => {
-                      const student = MockDB.users.find(u => u.id === b.studentId);
-                      return (
+                    {loading ? (
+                      <TableRow><TableCell colSpan={4} className="text-center py-8"><Loader2 className="h-6 w-6 animate-spin mx-auto text-primary" /></TableCell></TableRow>
+                    ) : (
+                      bookings.map((b) => (
                         <TableRow key={b.id} className="border-white/5 hover:bg-white/5">
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <div className="p-2 rounded-lg bg-primary/10"><UserIcon className="h-3.5 w-3.5 text-primary" /></div>
                               <div>
                                 <p className="text-xs font-bold">{b.studentName}</p>
-                                <p className="text-[10px] text-muted-foreground">{student?.email}</p>
+                                <p className="text-[10px] text-muted-foreground">ID: {b.studentId.slice(0, 8)}</p>
                               </div>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <Badge variant="outline" className="text-[10px] border-white/10 bg-white/5 font-mono">{b.machineId}</Badge>
+                            <Badge variant="outline" className="text-[10px] border-white/10 bg-white/5 font-mono">{b.machineName || b.machineId}</Badge>
                           </TableCell>
                           <TableCell>
                             <div className="flex flex-col gap-1">
-                               <span className="flex items-center gap-1 text-[10px] font-medium"><Calendar className="h-2.5 w-2.5" /> Today</span>
+                               <span className="flex items-center gap-1 text-[10px] font-medium"><Calendar className="h-2.5 w-2.5" /> {b.date ? new Date(b.date).toLocaleDateString() : 'N/A'}</span>
                                <span className="flex items-center gap-1 text-[10px] text-muted-foreground"><Clock className="h-2.5 w-2.5" /> {b.timeSlot}</span>
                             </div>
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={cn(
-                              "text-[10px] border-0 rounded-full font-bold",
-                              student?.skillLevel === 'Expert' ? 'bg-purple-500/10 text-purple-500' :
-                              student?.skillLevel === 'Intermediate' ? 'bg-blue-500/10 text-blue-500' :
-                              'bg-green-500/10 text-green-500'
-                            )}>
-                              {student?.skillLevel}
-                            </Badge>
                           </TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
@@ -89,11 +91,11 @@ export default function TrainerApprovalsPage() {
                             </div>
                           </TableCell>
                         </TableRow>
-                      );
-                    })}
-                    {bookings.length === 0 && (
+                      ))
+                    )}
+                    {!loading && bookings.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-12 text-muted-foreground text-xs">No pending requests at the moment.</TableCell>
+                        <TableCell colSpan={4} className="text-center py-12 text-muted-foreground text-xs">No pending requests at the moment.</TableCell>
                       </TableRow>
                     )}
                   </TableBody>
@@ -110,14 +112,10 @@ export default function TrainerApprovalsPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                  <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mb-1">Approved Today</p>
-                    <p className="text-2xl font-bold">12</p>
+                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mb-1">Queue Size</p>
+                    <p className="text-2xl font-bold">{bookings.length}</p>
                  </div>
-                 <div className="p-4 rounded-2xl bg-white/5 border border-white/10">
-                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mb-1">Total Mentorship Hrs</p>
-                    <p className="text-2xl font-bold">{MockDB.currentUser.totalHours}</p>
-                 </div>
-                 <Button variant="outline" className="w-full text-xs rounded-xl border-white/10 h-9">View My Schedule</Button>
+                 <Button variant="outline" className="w-full text-xs rounded-xl border-white/10 h-9">View Full Schedule</Button>
               </CardContent>
            </Card>
 
@@ -126,9 +124,9 @@ export default function TrainerApprovalsPage() {
                  <div className="mx-auto p-3 rounded-2xl bg-primary/20 w-fit"><GraduationCap className="h-6 w-6 text-primary" /></div>
                  <div>
                     <h3 className="text-sm font-headline font-bold">New Certifications</h3>
-                    <p className="text-[10px] text-muted-foreground mt-1">4 students are ready for the Expert CNC module evaluation.</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">Check the student profiles for readiness reviews.</p>
                  </div>
-                 <Button className="w-full tech-gradient border-0 text-[10px] h-9 rounded-xl font-bold">Launch Assessment</Button>
+                 <Button className="w-full tech-gradient border-0 text-[10px] h-9 rounded-xl font-bold">Review Skills</Button>
               </CardContent>
            </Card>
         </div>
