@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Cpu, Zap, BarChart3, ShieldCheck, ArrowRight } from 'lucide-react';
+import { Cpu, Zap, BarChart3, ShieldCheck, ArrowRight, Building2, Factory, GraduationCap, Globe } from 'lucide-react';
 
 export default function LandingPage() {
   return (
@@ -15,8 +15,8 @@ export default function LandingPage() {
           <Link className="text-sm font-medium hover:text-primary transition-colors hidden md:block" href="#features">
             Features
           </Link>
-          <Link className="text-sm font-medium hover:text-primary transition-colors hidden md:block" href="#about">
-            About
+          <Link className="text-sm font-medium hover:text-primary transition-colors hidden md:block" href="#use-cases">
+            Use Cases
           </Link>
           <Link href="/dashboard">
             <Button variant="outline" className="rounded-full px-6">Login</Button>
@@ -53,12 +53,38 @@ export default function LandingPage() {
                     Go to Dashboard <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </Link>
-                <Link href="#features">
+                <Link href="#use-cases">
                   <Button size="lg" variant="outline" className="rounded-full px-8 h-12 text-lg hover:bg-white/5">
-                    View Demo
+                    Explore Use Cases
                   </Button>
                 </Link>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Use Cases Section */}
+        <section id="use-cases" className="w-full py-20 bg-white/[0.02]">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="text-center mb-16">
+               <h2 className="text-3xl font-headline font-bold mb-4">Where can you use SkillMach AI?</h2>
+               <p className="text-muted-foreground max-w-2xl mx-auto">Our platform scales to support various types of technical training environments.</p>
+            </div>
+            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+              {[
+                { title: "Vocational Institutes", icon: GraduationCap, desc: "Manage CNCs and 3D printers across multiple city campuses." },
+                { title: "Industrial Training", icon: Factory, desc: "Track student machine hours for government certifications." },
+                { title: "Corporate Hubs", icon: Building2, desc: "Internal workforce training for large-scale manufacturing firms." },
+                { title: "Government Missions", icon: Globe, desc: "Scaling training infrastructure with centralized AI monitoring." }
+              ].map((item, i) => (
+                <div key={i} className="p-8 rounded-3xl border border-white/5 bg-white/5 hover:border-primary/30 transition-all text-center">
+                   <div className="mx-auto w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary mb-6">
+                      <item.icon className="h-6 w-6" />
+                   </div>
+                   <h3 className="text-lg font-bold mb-3">{item.title}</h3>
+                   <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
