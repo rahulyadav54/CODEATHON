@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useFirestore, useCollection, useUser, useDoc } from '@/firebase';
 import { collection, query, where, orderBy, doc } from 'firebase/firestore';
 import { History, Activity, Clock, User as UserIcon, Loader2, BarChart } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export default function UsageLogsPage() {
   const db = useFirestore();
