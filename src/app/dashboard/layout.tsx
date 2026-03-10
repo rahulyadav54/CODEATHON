@@ -1,6 +1,6 @@
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
-import { Bell, Search, Settings, Cpu } from 'lucide-react';
+import { Bell, Search, Settings, Cpu, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -17,7 +17,7 @@ export default function DashboardLayout({
           <header className="flex h-14 md:h-16 shrink-0 items-center justify-between gap-2 px-4 md:px-6 border-b border-white/5 sticky top-0 z-40 bg-background/80 backdrop-blur-md">
             <div className="flex items-center gap-2 md:gap-4">
               <SidebarTrigger className="text-muted-foreground" />
-              <div className="flex md:hidden items-center gap-2">
+              <div className="flex items-center gap-2 md:hidden">
                  <Cpu className="h-5 w-5 text-primary" />
                  <span className="text-sm font-headline font-bold">SkillMach</span>
               </div>
@@ -40,8 +40,8 @@ export default function DashboardLayout({
               </Button>
             </div>
           </header>
-          <main className="flex-1 overflow-y-auto p-4 md:p-8">
-            <div className="mx-auto max-w-7xl w-full">
+          <main className="flex-1 overflow-y-auto overflow-x-hidden">
+            <div className="mx-auto max-w-7xl w-full p-4 md:p-8">
               {children}
             </div>
           </main>
