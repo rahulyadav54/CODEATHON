@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -10,13 +11,10 @@ import {
   BarChart3, 
   Ticket, 
   MessageSquare, 
-  Settings,
-  ShieldCheck,
-  UserCircle,
-  ChevronRight,
-  MoreVertical,
   LogOut,
-  Loader2
+  Loader2,
+  ChevronRight,
+  User
 } from 'lucide-react';
 import {
   Sidebar,
@@ -30,7 +28,7 @@ import {
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { auth, db, useUser, useDoc } from '@/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useMemo } from 'react';
 import { 
@@ -43,13 +41,13 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 const navItems = [
-  { name: 'Overview', icon: LayoutDashboard, path: '/dashboard', roles: ['Admin', 'Trainer', 'Student'] },
-  { name: 'Machines', icon: Cpu, path: '/dashboard/machines', roles: ['Admin', 'Trainer'] },
+  { name: 'Overview', icon: LayoutDashboard, path: '/dashboard', roles: ['Admin', 'Teacher', 'Student'] },
+  { name: 'Machines', icon: Cpu, path: '/dashboard/machines', roles: ['Admin', 'Teacher'] },
   { name: 'Portal', icon: Calendar, path: '/dashboard/bookings', roles: ['Student'] },
-  { name: 'Approvals', icon: ShieldCheck, path: '/dashboard/trainer/approvals', roles: ['Trainer'] },
+  { name: 'Approvals', icon: Ticket, path: '/dashboard/trainer/approvals', roles: ['Teacher'] },
   { name: 'Analytics', icon: BarChart3, path: '/dashboard/analytics', roles: ['Admin'] },
-  { name: 'Maintenance', icon: Ticket, path: '/dashboard/maintenance', roles: ['Admin', 'Trainer'] },
-  { name: 'AI Zaya', icon: MessageSquare, path: '/dashboard/ai-zaya', roles: ['Admin', 'Trainer', 'Student'] },
+  { name: 'Maintenance', icon: Ticket, path: '/dashboard/maintenance', roles: ['Admin', 'Teacher'] },
+  { name: 'AI Zaya', icon: MessageSquare, path: '/dashboard/ai-zaya', roles: ['Admin', 'Teacher', 'Student'] },
 ];
 
 export function DashboardSidebar() {
@@ -64,11 +62,6 @@ export function DashboardSidebar() {
   }, [user?.uid]);
 
   const { data: profile, loading: profileLoading } = useDoc(userRef);
-
-  const handleRoleSwitch = async (newRole: string) => {
-    if (!userRef) return;
-    await updateDoc(userRef, { role: newRole });
-  };
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -140,19 +133,16 @@ export function DashboardSidebar() {
                   <div className="flex flex-col">
                     <span className="text-xs font-bold truncate max-w-[120px]">{profile?.name || user?.email}</span>
                     <span className="text-[10px] text-primary uppercase font-bold tracking-wider">
-                      {userRole === 'Admin' ? 'Overlord' : userRole === 'Trainer' ? 'Shield' : 'Trainee'}
+                      {userRole}
                     </span>
                   </div>
                 )}
               </div>
-              {state !== 'collapsed' && <MoreVertical className="h-4 w-4 text-muted-foreground" />}
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="right" align="end" className="w-56 bg-card border-white/10 rounded-2xl shadow-2xl">
-             <DropdownMenuLabel className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground px-4 py-3">Security Tier</DropdownMenuLabel>
-             <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer" onClick={() => handleRoleSwitch('Admin')}><Settings className="h-4 w-4" /> Overlord View</DropdownMenuItem>
-             <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer" onClick={() => handleRoleSwitch('Trainer')}><ShieldCheck className="h-4 w-4" /> Shield View</DropdownMenuItem>
-             <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer" onClick={() => handleRoleSwitch('Student')}><UserCircle className="h-4 w-4" /> Trainee View</DropdownMenuItem>
+             <DropdownMenuLabel className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground px-4 py-3">Account</DropdownMenuLabel>
+             <DropdownMenuItem className="gap-2 px-4 py-3 cursor-default"><User className="h-4 w-4" /> {userRole} Portal</DropdownMenuItem>
              <DropdownMenuSeparator className="bg-white/5" />
              <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer text-red-500 hover:text-red-400" onClick={handleLogout}><LogOut className="h-4 w-4" /> Logout</DropdownMenuItem>
           </DropdownMenuContent>

@@ -1,5 +1,6 @@
+
 export type MachineStatus = 'Available' | 'In Use' | 'Under Maintenance';
-export type UserRole = 'Admin' | 'Trainer' | 'Student';
+export type UserRole = 'Admin' | 'Teacher' | 'Student';
 export type SkillLevel = 'Beginner' | 'Intermediate' | 'Expert';
 export type BookingStatus = 'Pending' | 'Approved' | 'Rejected';
 
@@ -68,63 +69,7 @@ export const initialMachines: Machine[] = [
   { id: 'LAB-PC-24', name: 'CAD/CAM Workstation', type: 'Computer Lab', centerId: 'c1', status: 'In Use', usageHours: 3200, lastMaintenance: '2024-01-05', healthScore: 78, temperature: 38, vibration: 0.001 },
 ];
 
-export const initialUsers: User[] = [
-  { id: 'u1', name: 'Rahul Sharma', email: 'rahul@student.com', role: 'Student', skillLevel: 'Intermediate', totalHours: 45 },
-  { id: 'u2', name: 'Ananya Gupta', email: 'ananya@trainer.com', role: 'Trainer', skillLevel: 'Expert', totalHours: 250 },
-  { id: 'u3', name: 'System Admin', email: 'admin@skillmach.ai', role: 'Admin', skillLevel: 'Expert', totalHours: 500 },
-];
-
-export const initialBookings: Booking[] = [
-  { id: 'B1', studentId: 'u1', studentName: 'Rahul Sharma', machineId: 'CNC-101', centerId: 'c1', timeSlot: '10:00 AM - 12:00 PM', purpose: 'Advanced Milling Project', status: 'Approved', createdAt: '2024-03-10' },
-  { id: 'B2', studentId: 'u1', studentName: 'Rahul Sharma', machineId: 'LAB-PC-24', centerId: 'c1', timeSlot: '02:00 PM - 04:00 PM', purpose: 'AutoCAD Certification', status: 'Pending', createdAt: '2024-03-11' },
-];
-
-export const initialTickets: MaintenanceTicket[] = [
-  { id: 'TKT-001', machineId: 'ELC-KIT-05', issue: 'Overheating components detected during heavy load.', priority: 'High', assignedTechnician: 'John Doe', status: 'In Progress', createdAt: '2024-03-02' },
-];
-
-const STORAGE_KEY = 'skillmach_current_user_id';
-
 export class MockDB {
   static machines = [...initialMachines];
-  static bookings = [...initialBookings];
-  static tickets = [...initialTickets];
   static centers = [...centers];
-  static users = [...initialUsers];
-  
-  static get currentUser(): User {
-    if (typeof window === 'undefined') return initialUsers[0];
-    const savedId = localStorage.getItem(STORAGE_KEY);
-    const user = this.users.find(u => u.id === savedId);
-    return user || initialUsers[0];
-  }
-
-  static setCurrentUser(role: UserRole) {
-    const user = this.users.find(u => u.role === role);
-    if (user && typeof window !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, user.id);
-    }
-  }
-
-  static addMachine(machine: Machine) {
-    this.machines.push(machine);
-  }
-
-  static updateMachineStatus(id: string, status: MachineStatus) {
-    const m = this.machines.find(x => x.id === id);
-    if (m) m.status = status;
-  }
-
-  static addBooking(booking: Booking) {
-    this.bookings.push(booking);
-  }
-
-  static updateBookingStatus(id: string, status: BookingStatus) {
-    const b = this.bookings.find(x => x.id === id);
-    if (b) b.status = status;
-  }
-
-  static addTicket(ticket: MaintenanceTicket) {
-    this.tickets.push(ticket);
-  }
 }

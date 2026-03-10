@@ -9,7 +9,7 @@
         "id": { "type": "string" },
         "name": { "type": "string" },
         "email": { "type": "string", "format": "email" },
-        "role": { "type": "string", "enum": ["Admin", "Trainer", "Student"] },
+        "role": { "type": "string", "enum": ["Admin", "Teacher", "Student"] },
         "skillLevel": { "type": "string", "enum": ["Beginner", "Intermediate", "Expert"] },
         "totalHours": { "type": "number" }
       },
