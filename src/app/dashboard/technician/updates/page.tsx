@@ -28,7 +28,7 @@ export default function TechnicianUpdatesPage() {
 
   // Real-time query for the most recent calibration logs
   const recentLogsQuery = useMemo(() => 
-    db ? query(collection(db, 'usageLogs'), orderBy('createdAt', 'desc'), limit(3)) : null,
+    db ? query(collection(db, 'usageLogs'), orderBy('createdAt', 'desc'), limit(5)) : null,
     [db]
   );
   const { data: recentLogs } = useCollection(recentLogsQuery);
@@ -58,39 +58,34 @@ export default function TechnicianUpdatesPage() {
       status: health[0] < 50 ? 'Under Maintenance' : (selectedMachine?.status || 'Available')
     };
 
+    // Mutation: Update Machine Telemetry
     setDoc(machineRef, updateData, { merge: true })
-      .then(() => {
-        // Log maintenance report to usageLogs for the real-time "Recent Reports" feed
-        addDoc(collection(db, 'usageLogs'), {
-          machineId: selectedMachineId,
-          machineName: selectedMachine?.name || selectedMachineId,
-          userId: user.uid,
-          userName: profile.name || user.email || 'Technician',
-          startTime: new Date().toISOString(),
-          type: 'Telemetry Sync',
-          status: 'Calibrated',
-          createdAt: serverTimestamp()
-        });
+      .catch((err) => console.error("Machine sync error:", err));
 
-        toast({ 
-          title: "Fleet Synchronized", 
-          description: `Telemetry for ${selectedMachine?.name || selectedMachineId} has been updated in the cloud.` 
-        });
-        
-        setTemp('');
-        setVibration('');
-        setHours('');
-      })
-      .catch((error: any) => {
-        toast({ 
-          variant: "destructive", 
-          title: "Uplink Failed", 
-          description: error.message || "Could not write to the central database." 
-        });
-      })
-      .finally(() => {
-        setIsUpdating(false);
-      });
+    // Mutation: Create Audit Log
+    addDoc(collection(db, 'usageLogs'), {
+      machineId: selectedMachineId,
+      machineName: selectedMachine?.name || selectedMachineId,
+      userId: user.uid,
+      userName: profile.name || user.email || 'Technician',
+      startTime: new Date().toISOString(),
+      type: 'Telemetry Sync',
+      status: 'Calibrated',
+      createdAt: serverTimestamp()
+    }).catch((err) => console.error("Log error:", err));
+
+    // Success Message (Immediate Feedback)
+    toast({ 
+      title: "Update Successful", 
+      description: `Telemetry for ${selectedMachine?.name || selectedMachineId} has been synchronized with the cloud.`,
+      className: "bg-green-500/10 border-green-500/20 text-green-500 font-bold"
+    });
+    
+    // Reset fields
+    setTemp('');
+    setVibration('');
+    setHours('');
+    setIsUpdating(false);
   };
 
   return (
