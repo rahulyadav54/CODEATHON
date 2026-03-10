@@ -1,7 +1,6 @@
-
 "use client";
 
-import Link from 'link';
+import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { 
