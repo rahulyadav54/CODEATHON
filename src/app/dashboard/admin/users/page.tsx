@@ -10,13 +10,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useFirestore, useCollection } from '@/firebase';
 import { collection, doc, updateDoc, deleteDoc, setDoc } from 'firebase/firestore';
-import { Users, Search, MoreHorizontal, UserCog, Mail, ShieldAlert, Trash2, Loader2, Plus, Wrench, Lock } from 'lucide-react';
+import { Users, Search, MoreHorizontal, UserCog, Mail, ShieldAlert, Trash2, Loader2, Plus, Wrench, Lock, CheckCircle2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
-import { initializeApp, getApp, getApps } from 'firebase/app';
+import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 
 // Firebase config for secondary app bridge to avoid logging out the admin
@@ -84,8 +84,9 @@ export default function UserManagementPage() {
       await signOut(secondaryAuth);
 
       toast({ 
-        title: "Operator Registered", 
-        description: `${newName} has been enrolled and is ready for uplink.` 
+        title: "Registration Success", 
+        description: `${newName} has been enrolled successfully.`,
+        className: "bg-green-500/10 border-green-500/20 text-green-500 font-bold",
       });
       
       setIsAddUserOpen(false);
@@ -93,6 +94,7 @@ export default function UserManagementPage() {
       setNewEmail('');
       setNewPassword('');
       setNewRole('Trainee');
+      setNewSkill('Beginner');
     } catch (error: any) {
       toast({ variant: "destructive", title: "Enrollment Failed", description: error.message });
     } finally {
@@ -104,7 +106,11 @@ export default function UserManagementPage() {
     if (!db) return;
     try {
       await updateDoc(doc(db, 'users', userId), { role: newRole });
-      toast({ title: "Role Updated", description: `User role successfully changed to ${newRole}.` });
+      toast({ 
+        title: "Role Updated", 
+        description: `Security tier successfully changed to ${newRole}.`,
+        className: "bg-green-500/10 border-green-500/20 text-green-500 font-bold",
+      });
     } catch (error: any) {
       toast({ variant: "destructive", title: "Update Failed", description: error.message });
     }
@@ -115,7 +121,11 @@ export default function UserManagementPage() {
     if (!confirm("Are you sure you want to revoke this user's access? This does not delete their Auth account.")) return;
     try {
       await deleteDoc(doc(db, 'users', userId));
-      toast({ title: "Access Revoked", description: "User profile has been removed from the directory." });
+      toast({ 
+        title: "Access Revoked", 
+        description: "User profile has been removed from the directory.",
+        className: "bg-red-500/10 border-red-500/20 text-red-500 font-bold",
+      });
     } catch (error: any) {
       toast({ variant: "destructive", title: "Revocation Failed", description: error.message });
     }

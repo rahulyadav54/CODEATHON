@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { 
   Cpu, GraduationCap, Wrench, ShieldAlert,
-  Loader2, Mail, Lock, User as UserIcon
+  Loader2, Mail, Lock, User as UserIcon, CheckCircle2
 } from 'lucide-react';
 import { auth, db, useUser } from '@/firebase';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from 'firebase/auth';
@@ -32,9 +32,15 @@ export default function LoginPage() {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   // Redirection logic based on role
-  const redirectBasedOnRole = (userRole: string) => {
+  const redirectBasedOnRole = (userRole: string, isNewUser: boolean = false) => {
     const roleLabel = userRole === 'Technician' ? 'Teacher' : userRole === 'Trainee' ? 'Student' : userRole;
-    toast({ title: "Access Granted", description: `Synchronizing ${roleLabel} portal...` });
+    
+    toast({ 
+      title: isNewUser ? "Account Created" : "Login Successful", 
+      description: `Synchronizing ${roleLabel} portal for ${name || email}...`,
+      className: "bg-green-500/10 border-green-500/20 text-green-500 font-bold",
+    });
+    
     router.push('/dashboard');
   };
 
@@ -62,14 +68,14 @@ export default function LoginPage() {
           id: userCredential.user.uid,
           name: name,
           email: userCredential.user.email,
-          role: role, // Saves 'Admin', 'Technician', or 'Trainee'
+          role: role,
           skillLevel: 'Beginner',
           totalHours: 0,
           createdAt: new Date().toISOString()
         };
         
         await setDoc(doc(db, 'users', userCredential.user.uid), userData);
-        redirectBasedOnRole(role);
+        redirectBasedOnRole(role, true);
       } else {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         
@@ -110,7 +116,9 @@ export default function LoginPage() {
       const userDoc = await getDoc(userDocRef);
       
       let finalRole = 'Trainee';
+      let isNew = false;
       if (!userDoc.exists()) {
+        isNew = true;
         await setDoc(userDocRef, {
           id: result.user.uid,
           name: result.user.displayName || 'Operator',
@@ -123,7 +131,7 @@ export default function LoginPage() {
       } else {
         finalRole = userDoc.data().role || 'Trainee';
       }
-      redirectBasedOnRole(finalRole);
+      redirectBasedOnRole(finalRole, isNew);
     } catch (error: any) {
       setIsAuthenticating(false);
       toast({ variant: "destructive", title: "Auth Error", description: error.message });
