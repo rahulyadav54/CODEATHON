@@ -30,7 +30,7 @@ import {
   useSidebar
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuth, useFirestore, useUser, useDoc } from '@/firebase';
+import { auth, db, useUser, useDoc } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
 import { useMemo } from 'react';
@@ -50,14 +50,12 @@ export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { state } = useSidebar();
-  const auth = useAuth();
-  const db = useFirestore();
   const { user, loading: authLoading } = useUser();
   
   const userRef = useMemo(() => {
     if (!db || !user?.uid) return null;
     return doc(db, 'users', user.uid);
-  }, [db, user?.uid]);
+  }, [user?.uid]);
 
   const { data: profile, loading: profileLoading } = useDoc(userRef);
 
@@ -67,7 +65,6 @@ export function DashboardSidebar() {
   };
 
   const handleLogout = async () => {
-    if (!auth) return;
     await signOut(auth);
     router.push('/login');
   };

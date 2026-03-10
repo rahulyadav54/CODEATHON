@@ -10,9 +10,9 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
   Cpu, ShieldCheck, GraduationCap, Settings, 
-  ArrowRight, Loader2, Mail, Lock, UserPlus, LogIn, Sparkles
+  ArrowRight, Loader2, Mail, Lock, Sparkles
 } from 'lucide-react';
-import { useAuth, useFirestore, useUser } from '@/firebase';
+import { auth, db, useUser } from '@/firebase';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
@@ -23,8 +23,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const auth = useAuth();
-  const db = useFirestore();
   const { user, loading } = useUser();
   
   const [isSignUp, setIsSignUp] = useState(false);
@@ -43,7 +41,6 @@ export default function LoginPage() {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!auth || !db) return;
     setIsAuthenticating(true);
 
     try {
@@ -58,24 +55,23 @@ export default function LoginPage() {
           totalHours: 0,
           createdAt: new Date().toISOString()
         });
-        toast({ title: "Account Created", description: `Welcome to CODEATHON AI as a ${role === 'Student' ? 'Trainee' : role === 'Trainer' ? 'Shield' : 'Overlord'}.` });
+        toast({ title: "Account Created", description: `Welcome to CODEATHON AI.` });
       } else {
         await signInWithEmailAndPassword(auth, email, password);
-        toast({ title: "Access Granted", description: "Successfully established node connection." });
+        toast({ title: "Access Granted", description: "Node connection established." });
       }
       router.push('/dashboard');
     } catch (error: any) {
       toast({
         variant: "destructive",
-        title: "Authentication Failed",
-        description: error.message || "Invalid operator credentials."
+        title: "Auth Failed",
+        description: error.message
       });
       setIsAuthenticating(false);
     }
   };
 
   const loginWithGoogle = async () => {
-    if (!auth || !db) return;
     setIsAuthenticating(true);
     try {
       const provider = new GoogleAuthProvider();

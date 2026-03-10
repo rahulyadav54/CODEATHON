@@ -21,34 +21,28 @@ function getFirebaseApp(): FirebaseApp {
   return initializeApp(firebaseConfig);
 }
 
-export function useAuth(): Auth | null {
-  const [auth, setAuth] = useState<Auth | null>(null);
-  useEffect(() => {
-    setAuth(getAuth(getFirebaseApp()));
-  }, []);
+const app = getFirebaseApp();
+export const auth = getAuth(app);
+export const db = getFirestore(app);
+
+export function useAuth(): Auth {
   return auth;
 }
 
-export function useFirestore(): Firestore | null {
-  const [db, setDb] = useState<Firestore | null>(null);
-  useEffect(() => {
-    setDb(getFirestore(getFirebaseApp()));
-  }, []);
+export function useFirestore(): Firestore {
   return db;
 }
 
 export function useUser() {
-  const auth = useAuth();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!auth) return;
     return onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
     });
-  }, [auth]);
+  }, []);
 
   return { user, loading };
 }
