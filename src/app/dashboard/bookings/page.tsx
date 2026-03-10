@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -82,7 +81,7 @@ export default function BookingsPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700 pb-10">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-headline font-bold">Equipment Portal</h1>
           <p className="text-muted-foreground text-sm">Reserve advanced machinery and track your learning progress.</p>
@@ -196,12 +195,15 @@ export default function BookingsPage() {
 
                 <div className="space-y-3">
                    <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">Session Timeline (Calendar)</Label>
-                   <div className="border border-white/10 rounded-[2rem] p-6 bg-white/[0.03] shadow-inner">
+                   <div className="border border-white/10 rounded-[2rem] p-4 bg-white/[0.03] shadow-inner flex justify-center min-h-[350px]">
                       <Calendar 
                         mode="single" 
                         selected={date} 
                         onSelect={setDate} 
-                        className="rounded-md w-full"
+                        className="w-full h-full"
+                        captionLayout="dropdown"
+                        fromYear={2024}
+                        toYear={2030}
                         disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
                       />
                    </div>
@@ -279,4 +281,3 @@ export default function BookingsPage() {
     </div>
   );
 }
-
