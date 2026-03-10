@@ -83,7 +83,8 @@ export const initialTickets: MaintenanceTicket[] = [
   { id: 'TKT-001', machineId: 'ELC-KIT-05', issue: 'Overheating components detected during heavy load.', priority: 'High', assignedTechnician: 'John Doe', status: 'In Progress', createdAt: '2024-03-02' },
 ];
 
-// Simple singleton for state management in memory
+const STORAGE_KEY = 'skillmach_current_user_id';
+
 export class MockDB {
   static machines = [...initialMachines];
   static bookings = [...initialBookings];
@@ -91,12 +92,18 @@ export class MockDB {
   static centers = [...centers];
   static users = [...initialUsers];
   
-  // Simulation of a logged-in user
-  static currentUser: User = initialUsers[0]; 
+  static get currentUser(): User {
+    if (typeof window === 'undefined') return initialUsers[0];
+    const savedId = localStorage.getItem(STORAGE_KEY);
+    const user = this.users.find(u => u.id === savedId);
+    return user || initialUsers[0];
+  }
 
   static setCurrentUser(role: UserRole) {
     const user = this.users.find(u => u.role === role);
-    if (user) this.currentUser = user;
+    if (user && typeof window !== 'undefined') {
+      localStorage.setItem(STORAGE_KEY, user.id);
+    }
   }
 
   static addMachine(machine: Machine) {

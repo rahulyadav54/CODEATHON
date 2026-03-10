@@ -1,7 +1,7 @@
 "use client";
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { 
   LayoutDashboard, 
@@ -15,7 +15,7 @@ import {
   UserCircle,
   ChevronRight,
   MoreVertical,
-  Activity
+  LogOut
 } from 'lucide-react';
 import {
   Sidebar,
@@ -29,8 +29,8 @@ import {
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MockDB, UserRole } from '@/lib/mock-data';
-import { useState } from 'react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { useState, useEffect } from 'react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 
 const navItems = [
   { name: 'Overview', icon: LayoutDashboard, path: '/dashboard', roles: ['Admin', 'Trainer', 'Student'] },
@@ -44,14 +44,30 @@ const navItems = [
 
 export function DashboardSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { state } = useSidebar();
-  const [role, setRole] = useState<UserRole>(MockDB.currentUser.role);
+  const [role, setRole] = useState<UserRole | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setRole(MockDB.currentUser.role);
+    setMounted(true);
+  }, []);
 
   const handleRoleSwitch = (newRole: UserRole) => {
     MockDB.setCurrentUser(newRole);
     setRole(newRole);
-    window.location.reload(); // Simple reload to refresh role-based UI
+    window.location.reload(); 
   };
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('skillmach_current_user_id');
+      router.push('/login');
+    }
+  };
+
+  if (!mounted || !role) return null;
 
   const filteredNav = navItems.filter(item => item.roles.includes(role));
 
@@ -118,6 +134,8 @@ export function DashboardSidebar() {
              <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer" onClick={() => handleRoleSwitch('Admin')}><Settings className="h-4 w-4" /> Admin View</DropdownMenuItem>
              <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer" onClick={() => handleRoleSwitch('Trainer')}><ShieldCheck className="h-4 w-4" /> Trainer View</DropdownMenuItem>
              <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer" onClick={() => handleRoleSwitch('Student')}><UserCircle className="h-4 w-4" /> Student View</DropdownMenuItem>
+             <DropdownMenuSeparator className="bg-white/5" />
+             <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer text-red-500 hover:text-red-400" onClick={handleLogout}><LogOut className="h-4 w-4" /> Logout</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </SidebarFooter>

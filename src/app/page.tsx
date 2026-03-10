@@ -18,10 +18,10 @@ export default function LandingPage() {
           <Link className="text-sm font-medium hover:text-primary transition-colors hidden md:block" href="#use-cases">
             Use Cases
           </Link>
-          <Link href="/dashboard">
+          <Link href="/login">
             <Button variant="outline" className="rounded-full px-6">Login</Button>
           </Link>
-          <Link href="/dashboard">
+          <Link href="/login">
             <Button className="rounded-full px-6 tech-gradient border-0">Get Started</Button>
           </Link>
         </nav>
@@ -48,7 +48,7 @@ export default function LandingPage() {
                 A data-driven platform for smart management, real-time monitoring, and predictive maintenance of machinery across skill development centers.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 mt-8">
-                <Link href="/dashboard">
+                <Link href="/login">
                   <Button size="lg" className="rounded-full px-8 h-12 text-lg tech-gradient border-0 hover:scale-105 transition-transform">
                     Go to Dashboard <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
