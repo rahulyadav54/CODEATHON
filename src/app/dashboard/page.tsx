@@ -13,14 +13,13 @@ import {
   Cell,
   PieChart,
   Pie,
-  LineChart,
-  Line
 } from 'recharts';
-import { Cpu, Zap, AlertTriangle, CheckCircle2, TrendingUp, Users } from 'lucide-react';
+import { Cpu, Zap, AlertTriangle, CheckCircle2, TrendingUp } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { MockDB, Machine } from '@/lib/mock-data';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
 const utilizationData = [
@@ -44,7 +43,6 @@ const COLORS = ['hsl(var(--primary))', 'hsl(var(--accent))', '#00C49F', '#FFBB28
 
 export default function DashboardOverview() {
   const [machines, setMachines] = useState<Machine[]>([]);
-  const [activeTab, setActiveTab] = useState('overall');
 
   useEffect(() => {
     setMachines(MockDB.machines);
@@ -53,7 +51,6 @@ export default function DashboardOverview() {
   const totalMachines = machines.length;
   const inUse = machines.filter(m => m.status === 'In Use').length;
   const inMaintenance = machines.filter(m => m.status === 'Under Maintenance').length;
-  const available = machines.filter(m => m.status === 'Available').length;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-500">

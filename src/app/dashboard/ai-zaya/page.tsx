@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Cpu, Send, Sparkles, BookOpen, Wrench, HelpCircle } from 'lucide-react';
 import { aiZayaOperationalSupport } from '@/ai/flows/ai-zaya-operational-support-flow';
 import { MockDB } from '@/lib/mock-data';
+import { cn } from '@/lib/utils';
 
 type Message = {
   role: 'user' | 'assistant';
