@@ -5,11 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { 
   Cpu, Send, Sparkles, BookOpen, Wrench, Mic, MicOff, 
-  Trash2, Activity, Loader2, BrainCircuit, GraduationCap, Copy, RefreshCw,
-  Search, Info, FileText, CheckCircle2, Terminal, ShieldCheck, AlertTriangle
+  Trash2, Activity, Loader2, BrainCircuit, Search, 
+  Terminal, AlertTriangle, Info, FileText
 } from 'lucide-react';
 import { aiZayaOperationalSupport } from '@/ai/flows/ai-zaya-operational-support-flow';
 import { useFirestore, useUser, useDoc, useCollection } from '@/firebase';
@@ -46,7 +45,6 @@ export default function AiZayaPage() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
 
-  // Auto-scroll to bottom whenever messages or loading state changes
   useEffect(() => {
     if (scrollRef.current) {
       const scrollContainer = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]');
@@ -128,74 +126,70 @@ export default function AiZayaPage() {
   };
 
   const quickActions = [
-    { label: "Check Availability", icon: Search, query: "Which machines are available now?" },
-    { label: "Troubleshooting", icon: Wrench, query: "I need help with a machine error." },
-    { label: "Safety Protocols", icon: ShieldCheck, query: "What are the safety rules for CNC?" },
-    { label: "Fleet Health", icon: Activity, query: "Summarize the health of the current fleet." }
+    { label: "Check Availability", icon: Activity, query: "Which machines are available now?" },
+    { label: "Troubleshoot Issue", icon: Wrench, query: "I need help with a machine error." },
+    { label: "Explain Manual", icon: BookOpen, query: "Explain the training manual for CNC operation." },
+    { label: "Status Update", icon: Cpu, query: "Show the current status of the fleet." }
   ];
 
   return (
-    <div className="flex flex-col h-[calc(100vh-160px)] w-full max-w-6xl mx-auto bg-card/20 border border-white/5 rounded-3xl overflow-hidden shadow-2xl backdrop-blur-xl relative">
+    <div className="flex flex-col h-[calc(100vh-160px)] w-full max-w-6xl mx-auto bg-[#1a1c24] border border-white/5 rounded-3xl overflow-hidden shadow-2xl relative">
       
       {/* 1. Header Area */}
-      <div className="flex h-16 items-center justify-between px-6 border-b border-white/5 bg-black/40 backdrop-blur-md z-30 shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-primary/20 border border-primary/20">
+      <div className="flex h-20 items-center justify-between px-8 border-b border-white/5 bg-[#1a1c24] z-30 shrink-0">
+        <div className="flex items-center gap-4">
+          <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20">
             <Cpu className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <h2 className="text-sm font-headline font-bold">AI Zaya Operational Core</h2>
-              <Badge variant="outline" className="text-[8px] h-4 px-1.5 border-primary/30 text-primary">v2.5 FLASH</Badge>
-              <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
-            </div>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold">Active Neural Link</p>
+            <h2 className="text-lg font-headline font-bold text-white leading-tight">AI Zaya</h2>
+            <p className="text-xs text-muted-foreground/60 font-medium">Operational Specialist</p>
           </div>
         </div>
-        <div className="flex gap-2">
-           <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => setMessages([])} 
-            className="rounded-xl text-muted-foreground hover:bg-red-500/10 hover:text-red-500 transition-colors"
-           >
-             <Trash2 className="h-4 w-4" />
-           </Button>
-        </div>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => setMessages([])} 
+          className="rounded-xl text-muted-foreground/40 hover:bg-white/5 hover:text-white transition-colors"
+        >
+          <Trash2 className="h-5 w-5" />
+        </Button>
       </div>
 
       {/* 2. Scrollable Messages Container */}
-      <ScrollArea className="flex-1 w-full overflow-x-hidden" ref={scrollRef}>
-        <div className="max-w-4xl mx-auto px-4 md:px-8 py-8 space-y-8">
+      <ScrollArea className="flex-1 w-full overflow-x-hidden bg-[#1a1c24]" ref={scrollRef}>
+        <div className="max-w-4xl mx-auto px-6 py-8 md:py-12">
           {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center space-y-8">
-              <div className="relative">
-                <div className="p-6 rounded-3xl bg-gradient-to-br from-primary/10 to-accent/10 border border-white/5 relative z-10 shadow-2xl">
-                  <Sparkles className="h-12 w-12 text-primary" />
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="mb-8">
+                <div className="p-6 rounded-3xl bg-primary/5 border border-primary/10 inline-block">
+                  <Sparkles className="h-10 w-10 text-primary/60" />
                 </div>
-                <div className="absolute inset-0 bg-primary/20 rounded-full blur-[60px] -z-0" />
               </div>
               
-              <div className="space-y-4">
-                <h1 className="text-3xl font-headline font-bold tracking-tight text-white">
-                  Welcome back, {profile?.name?.split(' ')[0] || 'Operator'}.
+              <div className="space-y-4 mb-12">
+                <h1 className="text-3xl md:text-4xl font-headline font-bold tracking-tight text-white">
+                  How can I assist you today?
                 </h1>
-                <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-                  I am Zaya, your centralized intelligence layer. I have full visibility of the fleet. How shall we proceed?
+                <p className="text-sm text-muted-foreground/60 max-w-lg mx-auto leading-relaxed">
+                  Ask me about machine availability, diagnostics, or training guides.
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-2xl">
+              {/* Quick Actions Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl">
                 {quickActions.map((action, i) => (
                   <button 
                     key={i} 
                     onClick={() => handleSend(action.query)} 
-                    className="group p-4 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-primary/50 text-left flex items-center gap-4 transition-all hover:bg-white/[0.05]"
+                    className="group p-5 rounded-2xl bg-[#232530] border border-white/[0.03] hover:border-primary/40 text-left flex items-center gap-5 transition-all"
                   >
-                    <div className="p-3 rounded-xl bg-white/5 group-hover:bg-primary/20 text-muted-foreground group-hover:text-primary transition-all">
+                    <div className="p-3 rounded-xl bg-[#2a2d3a] group-hover:bg-primary/10 text-muted-foreground group-hover:text-primary transition-all">
                       <action.icon className="h-5 w-5" />
                     </div>
-                    <span className="text-sm font-bold group-hover:text-white transition-colors">{action.label}</span>
+                    <span className="text-sm font-bold text-white/80 group-hover:text-white transition-colors">
+                      {action.label}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -214,13 +208,10 @@ export default function AiZayaPage() {
                     )}
                   >
                     <Avatar className={cn(
-                      "h-8 w-8 shrink-0 mt-1 shadow-lg", 
-                      m.role === 'user' ? 'border-accent/30' : 'border-primary/30'
+                      "h-8 w-8 shrink-0 mt-1 shadow-lg border-white/5", 
+                      m.role === 'user' ? 'bg-accent' : 'bg-primary'
                     )}>
-                      <AvatarFallback className={cn(
-                        "text-[10px] font-bold", 
-                        m.role === 'user' ? 'bg-accent text-white' : 'bg-primary text-white'
-                      )}>
+                      <AvatarFallback className="text-[10px] font-bold text-white">
                         {m.role === 'user' ? 'U' : 'Z'}
                       </AvatarFallback>
                     </Avatar>
@@ -241,8 +232,8 @@ export default function AiZayaPage() {
                         <div className={cn(
                           "px-5 py-4 rounded-2xl shadow-xl break-words whitespace-pre-wrap overflow-wrap-anywhere overflow-x-hidden", 
                           m.role === 'user' 
-                            ? 'tech-gradient text-white rounded-tr-none' 
-                            : 'bg-white/[0.05] border border-white/10 text-foreground rounded-tl-none'
+                            ? 'bg-[#2a2d3a] text-white rounded-tr-none border border-white/5' 
+                            : 'bg-[#232530] border border-white/5 text-foreground rounded-tl-none'
                         )}>
                           <div className="prose prose-invert prose-sm max-w-none">
                             <ReactMarkdown 
@@ -251,7 +242,7 @@ export default function AiZayaPage() {
                                 p: ({children}) => <p className="mb-4 last:mb-0 leading-relaxed">{children}</p>,
                                 ul: ({children}) => <ul className="space-y-2 mb-4 ml-4 list-disc marker:text-primary">{children}</ul>,
                                 li: ({children}) => <li className="pl-1">{children}</li>,
-                                code: ({children}) => <code className="bg-black/40 px-1.5 py-0.5 rounded font-mono text-xs text-primary">{children}</code>
+                                code: ({children}) => <code className="bg-black/20 px-1.5 py-0.5 rounded font-mono text-xs text-primary/80">{children}</code>
                               }}
                             >
                               {m.content}
@@ -261,11 +252,11 @@ export default function AiZayaPage() {
                       )}
                       <div className="flex items-center gap-2 px-1">
                         {m.analysis && (
-                          <div className="flex items-center gap-1.5 text-[9px] text-primary font-bold uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded-md">
+                          <div className="flex items-center gap-1.5 text-[9px] text-primary/60 font-bold uppercase tracking-widest">
                             <BrainCircuit className="h-2.5 w-2.5" /> Fleet Synced
                           </div>
                         )}
-                        <span className="text-[9px] text-muted-foreground/40 font-bold uppercase">
+                        <span className="text-[9px] text-muted-foreground/30 font-bold uppercase">
                           {m.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         </span>
                       </div>
@@ -276,13 +267,10 @@ export default function AiZayaPage() {
               
               {isLoading && (
                 <div className="flex gap-4 items-center">
-                  <Avatar className="h-8 w-8 border border-primary/20 bg-primary/10 animate-pulse">
-                    <AvatarFallback className="bg-transparent text-primary text-[10px] font-bold">Z</AvatarFallback>
-                  </Avatar>
-                  <div className="px-5 py-3 bg-white/[0.03] border border-white/10 rounded-2xl flex items-center gap-3 shadow-sm">
-                    <Loader2 className="h-3 w-3 animate-spin text-primary" />
-                    <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Processing Query...</span>
+                  <div className="h-8 w-8 rounded-full bg-[#232530] border border-white/5 flex items-center justify-center">
+                    <Loader2 className="h-3 w-3 animate-spin text-primary/60" />
                   </div>
+                  <span className="text-[10px] text-muted-foreground/40 uppercase font-bold tracking-widest">Neural Processing...</span>
                 </div>
               )}
             </div>
@@ -291,46 +279,24 @@ export default function AiZayaPage() {
       </ScrollArea>
 
       {/* 3. Sticky Input Area */}
-      <div className="p-4 md:p-6 bg-black/40 backdrop-blur-2xl border-t border-white/5 shrink-0">
-        <div className="max-w-4xl mx-auto space-y-4">
-          
-          {/* Action Pills */}
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide no-scrollbar">
-            {quickActions.map((q, i) => (
-              <Button 
-                key={i} 
-                variant="outline" 
-                size="sm" 
-                onClick={() => handleSend(q.query)}
-                className="rounded-full bg-white/5 border-white/5 text-[9px] h-8 px-5 hover:bg-primary/20 hover:text-primary transition-all shrink-0 font-bold uppercase tracking-wider backdrop-blur-md"
-              >
-                <q.icon className="mr-2 h-3 w-3" />
-                {q.label}
-              </Button>
-            ))}
-          </div>
-
-          <div className="relative flex items-center gap-2">
-            <div className="relative flex-1 group">
-              <div className="absolute inset-0 bg-primary/10 rounded-2xl blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
-              <div className="relative flex items-center bg-white/[0.03] border border-white/10 rounded-2xl px-4 focus-within:border-primary/40 focus-within:bg-white/[0.05] transition-all">
-                <Terminal className="h-4 w-4 text-muted-foreground/30 mr-2" />
-                <Input 
-                  className="bg-transparent border-0 h-14 focus-visible:ring-0 placeholder:text-muted-foreground/30 text-sm md:text-base shadow-none" 
-                  placeholder="Ask AI Zaya about machine diagnostics, maintenance, or training..." 
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                />
-              </div>
-            </div>
-            <div className="flex gap-2 shrink-0">
+      <div className="p-6 md:p-8 bg-[#1a1c24] border-t border-white/5 shrink-0">
+        <div className="max-w-4xl mx-auto">
+          <div className="relative flex items-center bg-[#232530] border border-white/10 rounded-2xl px-5 h-16 group transition-all focus-within:border-primary/40 focus-within:shadow-[0_0_20px_rgba(var(--primary),0.05)]">
+            <Input 
+              className="bg-transparent border-0 h-full focus-visible:ring-0 placeholder:text-muted-foreground/20 text-sm md:text-base shadow-none px-0" 
+              placeholder="Ask AI Zaya about machines, troubleshooting, or training..." 
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
+            />
+            
+            <div className="flex items-center gap-2 shrink-0">
               <Button 
                 size="icon" 
                 variant="ghost" 
                 className={cn(
-                  "h-14 w-14 rounded-2xl transition-all duration-300", 
-                  isListening ? "text-red-500 bg-red-500/10 shadow-lg scale-105" : "text-muted-foreground hover:bg-white/10"
+                  "h-10 w-10 rounded-xl transition-all", 
+                  isListening ? "text-red-500 bg-red-500/10" : "text-muted-foreground/30 hover:bg-white/5"
                 )} 
                 onClick={toggleListening}
               >
@@ -338,7 +304,7 @@ export default function AiZayaPage() {
               </Button>
               <Button 
                 size="icon" 
-                className="h-14 w-14 tech-gradient text-white rounded-2xl shadow-2xl shadow-primary/30 hover:scale-105 transition-transform active:scale-95 disabled:opacity-30 disabled:grayscale" 
+                className="h-10 w-10 tech-gradient text-white rounded-xl shadow-xl hover:scale-105 transition-transform active:scale-95 disabled:opacity-30 disabled:grayscale" 
                 onClick={() => handleSend()} 
                 disabled={isLoading || !input.trim()}
               >
@@ -346,9 +312,6 @@ export default function AiZayaPage() {
               </Button>
             </div>
           </div>
-          <p className="text-center text-[8px] text-muted-foreground/30 uppercase tracking-[0.4em] font-bold">
-            Encrypted Operational Stream • Level {profile?.skillLevel || 'A'} Clearance
-          </p>
         </div>
       </div>
     </div>
