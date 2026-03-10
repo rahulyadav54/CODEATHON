@@ -10,12 +10,26 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useFirestore, useCollection } from '@/firebase';
 import { collection, doc, updateDoc, deleteDoc, setDoc } from 'firebase/firestore';
-import { Users, Search, MoreHorizontal, UserCog, ShieldCheck, Mail, ShieldAlert, Trash2, Loader2, Plus, GraduationCap, Wrench } from 'lucide-react';
+import { Users, Search, MoreHorizontal, UserCog, Mail, ShieldAlert, Trash2, Loader2, Plus, Wrench, Lock } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
+import { initializeApp, getApp, getApps } from 'firebase/app';
+import { getAuth, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+
+// Firebase config for secondary app bridge to avoid logging out the admin
+const firebaseConfig = {
+  apiKey: "AIzaSyB5E2bcxYpLFOj7v0tA4ryGKvZspDMQn4I",
+  authDomain: "codeathon-ai-ff8c1.firebaseapp.com",
+  databaseURL: "https://codeathon-ai-ff8c1-default-rtdb.firebaseio.com",
+  projectId: "codeathon-ai-ff8c1",
+  storageBucket: "codeathon-ai-ff8c1.firebasestorage.app",
+  messagingSenderId: "297428971976",
+  appId: "1:297428971976:web:ab31ef239109ddc03d50fd",
+  measurementId: "G-45RBLM0RJX"
+};
 
 export default function UserManagementPage() {
   const { toast } = useToast();
@@ -27,6 +41,7 @@ export default function UserManagementPage() {
   // New User Form State
   const [newName, setNewName] = useState('');
   const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [newRole, setNewRole] = useState<'Trainee' | 'Technician' | 'Admin'>('Trainee');
   const [newSkill, setNewSkill] = useState<'Beginner' | 'Intermediate' | 'Expert'>('Beginner');
 
@@ -40,12 +55,21 @@ export default function UserManagementPage() {
 
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!db || !newName || !newEmail) return;
+    if (!db || !newName || !newEmail || !newPassword) {
+      toast({ variant: "destructive", title: "Missing Data", description: "All fields including password are required." });
+      return;
+    }
 
     setIsSubmitting(true);
     try {
-      // For a prototype, we use a simple ID or the email as the doc ID
-      const userId = `user_${Date.now()}`;
+      // 1. Provision Auth Account via secondary bridge to keep admin session alive
+      const secondaryApp = getApps().find(a => a.name === 'SecondaryBridge') || initializeApp(firebaseConfig, 'SecondaryBridge');
+      const secondaryAuth = getAuth(secondaryApp);
+      
+      const userCredential = await createUserWithEmailAndPassword(secondaryAuth, newEmail, newPassword);
+      const userId = userCredential.user.uid;
+
+      // 2. Create Firestore Profile
       await setDoc(doc(db, 'users', userId), {
         id: userId,
         name: newName,
@@ -56,14 +80,18 @@ export default function UserManagementPage() {
         createdAt: new Date().toISOString()
       });
 
+      // 3. Clear secondary session
+      await signOut(secondaryAuth);
+
       toast({ 
         title: "Operator Registered", 
-        description: `${newName} has been added to the decentralized directory.` 
+        description: `${newName} has been enrolled and is ready for uplink.` 
       });
       
       setIsAddUserOpen(false);
       setNewName('');
       setNewEmail('');
+      setNewPassword('');
       setNewRole('Trainee');
     } catch (error: any) {
       toast({ variant: "destructive", title: "Enrollment Failed", description: error.message });
@@ -84,10 +112,10 @@ export default function UserManagementPage() {
 
   const deleteUser = async (userId: string) => {
     if (!db) return;
-    if (!confirm("Are you sure you want to revoke this user's access?")) return;
+    if (!confirm("Are you sure you want to revoke this user's access? This does not delete their Auth account.")) return;
     try {
       await deleteDoc(doc(db, 'users', userId));
-      toast({ title: "Access Revoked", description: "User has been removed from the system." });
+      toast({ title: "Access Revoked", description: "User profile has been removed from the directory." });
     } catch (error: any) {
       toast({ variant: "destructive", title: "Revocation Failed", description: error.message });
     }
@@ -97,7 +125,7 @@ export default function UserManagementPage() {
     <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-700 pb-10">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-headline font-bold">User Directory</h1>
+          <h1 className="text-3xl font-headline font-bold text-white tracking-tight">User Directory</h1>
           <p className="text-muted-foreground text-sm">Manage access tiers and verify operator identities.</p>
         </div>
         <div className="flex gap-2 w-full md:w-auto">
@@ -128,7 +156,7 @@ export default function UserManagementPage() {
                       </div>
                       <DialogTitle className="text-2xl font-headline font-bold">Enroll Operator</DialogTitle>
                     </div>
-                    <DialogDescription className="text-xs uppercase font-bold tracking-widest text-muted-foreground/60">
+                    <DialogDescription className="text-[10px] uppercase font-bold tracking-[0.2em] text-muted-foreground/60">
                       Provision a new identity on the management network.
                     </DialogDescription>
                   </DialogHeader>
@@ -137,7 +165,7 @@ export default function UserManagementPage() {
                     <div className="space-y-2">
                       <Label className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest ml-1">Full Legal Name</Label>
                       <Input 
-                        placeholder="e.g. Rohith P" 
+                        placeholder="e.g. Priya Sharma" 
                         value={newName} 
                         onChange={(e) => setNewName(e.target.value)}
                         className="bg-white/[0.03] border-white/10 rounded-xl h-12 focus:border-primary/40"
@@ -154,6 +182,21 @@ export default function UserManagementPage() {
                         className="bg-white/[0.03] border-white/10 rounded-xl h-12 focus:border-primary/40"
                         required
                       />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest ml-1">Security Key (Password)</Label>
+                      <div className="relative">
+                        <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/40" />
+                        <Input 
+                          type="password" 
+                          placeholder="••••••••" 
+                          value={newPassword} 
+                          onChange={(e) => setNewPassword(e.target.value)}
+                          className="pl-10 bg-white/[0.03] border-white/10 rounded-xl h-12 focus:border-primary/40"
+                          required
+                          minLength={6}
+                        />
+                      </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
