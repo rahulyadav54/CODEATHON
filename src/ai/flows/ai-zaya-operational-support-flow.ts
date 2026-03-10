@@ -53,7 +53,7 @@ const aiZayaOperationalSupportPrompt = ai.definePrompt({
   name: 'aiZayaOperationalSupportPrompt',
   input: { schema: AiZayaOperationalSupportInputSchema },
   output: { schema: AiZayaOperationalSupportOutputSchema },
-  prompt: `You are AI Zaya, an expert operational support assistant for the SkillMach AI platform.
+  prompt: `You are AI Zaya, an expert operational support assistant for the CODEATHON AI platform.
 You have access to the user's profile and the entire machine fleet state.
 
 Your tasks:

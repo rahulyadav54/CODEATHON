@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -66,7 +65,7 @@ export default function LoginPage() {
           totalHours: 0,
           createdAt: new Date().toISOString()
         });
-        toast({ title: "Operator Registered", description: `Welcome to SkillMach AI, ${name}!` });
+        toast({ title: "Operator Registered", description: `Welcome to CODEATHON AI, ${name}!` });
       } else {
         await signInWithEmailAndPassword(auth, email, password);
         toast({ title: "Link Established", description: "Secure tunnel verified." });
@@ -128,7 +127,7 @@ export default function LoginPage() {
         <div className="text-center space-y-6 mb-10">
           <div className="inline-flex items-center gap-3 p-2 px-6 rounded-full bg-white/5 border border-white/10 backdrop-blur-xl">
             <Cpu className="h-5 w-5 text-blue-400" />
-            <span className="text-xl font-headline font-bold tracking-widest text-white uppercase">SkillMach <span className="text-blue-400">AI</span></span>
+            <span className="text-xl font-headline font-bold tracking-widest text-white uppercase">CODEATHON <span className="text-blue-400">AI</span></span>
           </div>
           <h1 className="text-4xl md:text-5xl font-headline font-bold text-white tracking-tighter">
             {isSignUp ? 'Enroll New Operator' : 'Establish Command Link'}
@@ -177,7 +176,7 @@ export default function LoginPage() {
                   <Label className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em]">Email Address</Label>
                   <div className="relative">
                     <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20" />
-                    <Input type="email" placeholder="name@skillmach.ai" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 focus:border-blue-500/50 transition-all" />
+                    <Input type="email" placeholder="name@codeathon.ai" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 focus:border-blue-500/50 transition-all" />
                   </div>
                 </div>
                 <div className="space-y-2">

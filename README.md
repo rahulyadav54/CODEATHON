@@ -1,10 +1,10 @@
-# SkillMach AI - Smart Training Machine Management
+# CODEATHON AI - Smart Training Machine Management
 
-SkillMach AI is a data-driven framework designed for the efficient management of training machinery across multiple skill development centers. It leverages Generative AI to provide predictive maintenance, strategic resource allocation, and real-time operational support.
+CODEATHON AI is a data-driven framework designed for the efficient management of training machinery across multiple skill development centers. It leverages Generative AI to provide predictive maintenance, strategic resource allocation, and real-time operational support.
 
 ## 🚀 How it Works (Core Logic)
 
-SkillMach AI operates as a centralized "Intelligence Layer" over physical training centers. Here is the technical flow:
+CODEATHON AI operates as a centralized "Intelligence Layer" over physical training centers. Here is the technical flow:
 
 ### 1. Data Aggregation & Simulation
 The project uses a centralized `MockDB` (`src/lib/mock-data.ts`) to simulate real-time fleet telemetry. Every machine tracks:
@@ -24,7 +24,7 @@ The "Brain" of the platform is built on **Google Genkit (Gemini 2.5 Flash)**. It
 - **Maintenance Command:** Focused on "At Risk" units with one-click AI diagnostics.
 - **AI Zaya Chat:** A full-screen, voice-enabled assistant for real-time support.
 
-## 🌐 Where to Use SkillMach AI
+## 🌐 Where to Use CODEATHON AI
 
 - **Vocational & Technical Institutes:** Manage CNCs and 3D printers across multiple campuses.
 - **Industrial Training Centers (ITCs):** Track student machine hours for government certifications.
