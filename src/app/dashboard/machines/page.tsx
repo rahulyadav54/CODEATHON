@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef } from 'react';
 import { 
   Table, 
   TableBody, 
@@ -20,7 +19,10 @@ import {
   Activity,
   Database,
   Loader2,
-  Calendar
+  Calendar,
+  FileUp,
+  Sparkles,
+  CheckCircle2
 } from 'lucide-react';
 import { MockDB, initialMachines, Machine } from '@/lib/mock-data';
 import { Badge } from '@/components/ui/badge';
@@ -36,7 +38,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogFooter
+  DialogFooter,
+  DialogDescription
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -52,6 +55,7 @@ import { useFirestore, useCollection, useUser, useDoc } from '@/firebase';
 import { collection, doc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
+import { bulkMachineExtraction } from '@/ai/flows/bulk-machine-extraction-flow';
 
 export default function MachineManagement() {
   const { toast } = useToast();
@@ -61,9 +65,14 @@ export default function MachineManagement() {
   const userRef = useMemo(() => user && db ? doc(db, 'users', user.uid) : null, [db, user]);
   const { data: profile } = useDoc(userRef);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('All');
   const [isSeeding, setIsSeeding] = useState(false);
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [extractedMachines, setExtractedMachines] = useState<any[]>([]);
+  const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
 
   const machinesQuery = useMemo(() => db ? collection(db, 'machines') : null, [db]);
   const { data: firestoreMachines, loading } = useCollection(machinesQuery);
@@ -94,6 +103,52 @@ export default function MachineManagement() {
     }
   };
 
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsExtracting(true);
+    setIsBulkDialogOpen(true);
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const base64 = event.target?.result as string;
+      try {
+        const response = await bulkMachineExtraction({ fileDataUri: base64 });
+        setExtractedMachines(response.machines);
+        toast({ title: "Extraction Complete", description: `Identified ${response.machines.length} machines from document.` });
+      } catch (error: any) {
+        toast({ variant: "destructive", title: "AI Error", description: "Failed to read the document. Ensure it's a clear image or PDF." });
+      } finally {
+        setIsExtracting(false);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const saveExtracted = async () => {
+    if (!db) return;
+    try {
+      for (const machine of extractedMachines) {
+        const machineData = {
+          ...machine,
+          status: 'Available',
+          usageHours: 0,
+          healthScore: 100,
+          temperature: 25,
+          vibration: 0,
+          lastMaintenance: new Date().toISOString().split('T')[0]
+        };
+        await setDoc(doc(db, 'machines', machine.id), machineData);
+      }
+      toast({ title: "Bulk Import Success", description: `${extractedMachines.length} units added to fleet.` });
+      setIsBulkDialogOpen(false);
+      setExtractedMachines([]);
+    } catch (error: any) {
+      toast({ variant: "destructive", title: "Save Failed", description: error.message });
+    }
+  };
+
   const isAdmin = profile?.role === 'Admin';
   const isStudent = profile?.role === 'Trainee';
 
@@ -105,6 +160,24 @@ export default function MachineManagement() {
           <p className="text-xs md:text-sm text-muted-foreground">Monitoring and discovery of CODEATHON AI equipment ({machines.length} units).</p>
         </div>
         <div className="flex gap-2 w-full sm:w-auto">
+          {isAdmin && (
+            <>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                className="hidden" 
+                accept="image/*,application/pdf"
+                onChange={handleFileUpload}
+              />
+              <Button 
+                variant="outline" 
+                className="rounded-xl border-primary/20 bg-primary/5 px-6 hidden md:flex" 
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <FileUp className="mr-2 h-4 w-4" /> Bulk AI Upload
+              </Button>
+            </>
+          )}
           {isAdmin && firestoreMachines.length === 0 && (
             <Button variant="outline" className="border-primary/20 bg-primary/5 rounded-xl px-6" onClick={seedDatabase} disabled={isSeeding}>
               {isSeeding ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Database className="mr-2 h-4 w-4" />}
@@ -243,6 +316,71 @@ export default function MachineManagement() {
           </Table>
         </div>
       </div>
+
+      {/* AI Bulk Import Dialog */}
+      <Dialog open={isBulkDialogOpen} onOpenChange={setIsBulkDialogOpen}>
+        <DialogContent className="bg-card border-white/10 max-w-4xl w-[95vw] rounded-3xl overflow-hidden p-0">
+          <div className="p-1 bg-gradient-to-r from-primary to-accent" />
+          <div className="p-8 space-y-6">
+            <DialogHeader>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2.5 rounded-2xl bg-primary/10 border border-primary/20">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                </div>
+                <DialogTitle className="text-2xl font-headline font-bold">AI Fleet Intelligence</DialogTitle>
+              </div>
+              <DialogDescription className="text-base">
+                Reviewing extracted machine data from your document. Correct any errors before final synchronization.
+              </DialogDescription>
+            </DialogHeader>
+
+            {isExtracting ? (
+              <div className="py-20 flex flex-col items-center justify-center gap-4 text-center">
+                <div className="relative">
+                  <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                  <Sparkles className="h-4 w-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-accent" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-lg">Neural OCR Processing...</h4>
+                  <p className="text-sm text-muted-foreground">Deciphering handwriting and mapping equipment nodes.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="rounded-2xl border border-white/5 bg-white/[0.02] overflow-hidden max-h-[400px] overflow-y-auto">
+                  <Table>
+                    <TableHeader className="bg-white/5">
+                      <TableRow className="border-white/5">
+                        <TableHead className="text-[10px] uppercase font-bold tracking-widest pl-6">ID</TableHead>
+                        <TableHead className="text-[10px] uppercase font-bold tracking-widest">Name</TableHead>
+                        <TableHead className="text-[10px] uppercase font-bold tracking-widest">Type</TableHead>
+                        <TableHead className="text-[10px] uppercase font-bold tracking-widest">Center</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {extractedMachines.map((m, i) => (
+                        <TableRow key={i} className="border-white/5">
+                          <TableCell className="font-mono text-[10px] text-primary font-bold pl-6">{m.id}</TableCell>
+                          <TableCell className="text-sm font-medium">{m.name}</TableCell>
+                          <TableCell><Badge variant="outline" className="text-[10px] border-white/10">{m.type}</Badge></TableCell>
+                          <TableCell className="text-xs text-muted-foreground">{m.centerId}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-white/5">
+                  <Button variant="ghost" className="rounded-xl border-white/10" onClick={() => setIsBulkDialogOpen(false)}>Discard</Button>
+                  <Button className="tech-gradient border-0 px-8 rounded-xl font-bold" onClick={saveExtracted}>
+                    <CheckCircle2 className="mr-2 h-4 w-4" /> Finalize Fleet Sync ({extractedMachines.length})
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
