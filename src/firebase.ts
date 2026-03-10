@@ -4,15 +4,16 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth, onAuthStateChanged, User } from 'firebase/auth';
 import { getFirestore, Firestore, doc, onSnapshot, DocumentData, collection, Query, DocumentReference } from 'firebase/firestore';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: "AIzaSyC3OkKB2A_lGnwlUci8Bt6wgS_9S15zHFc",
+  authDomain: "codeathon-ai.firebaseapp.com",
+  projectId: "codeathon-ai",
+  storageBucket: "codeathon-ai.firebasestorage.app",
+  messagingSenderId: "891748040035",
+  appId: "1:891748040035:web:4ed0d0494054bda20a6756",
+  measurementId: "G-6GQV6J0ZQW"
 };
 
 function getFirebaseApp(): FirebaseApp {

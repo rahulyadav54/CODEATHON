@@ -5,7 +5,7 @@ import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Calendar as CalendarIcon, Clock, BadgeInfo, Loader2 } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, BadgeInfo, Loader2, Activity, Zap, Thermometer } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useDoc } from '@/firebase';
 import { collection, query, where, addDoc, serverTimestamp, doc } from 'firebase/firestore';
+import { Progress } from '@/components/ui/progress';
 
 const timeSlots = [
   "09:00 AM - 11:00 AM",
@@ -72,6 +73,8 @@ export default function BookingsPage() {
     }
   };
 
+  const approvedBookings = myBookings.filter(b => b.status === 'Approved');
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700 pb-10">
       <div className="flex justify-between items-center">
@@ -84,6 +87,51 @@ export default function BookingsPage() {
            <span className="text-xs font-bold text-muted-foreground">{profile?.totalHours || 0} hrs trained</span>
         </div>
       </div>
+
+      {approvedBookings.length > 0 && (
+        <section className="space-y-4">
+          <h2 className="text-lg font-headline font-bold flex items-center gap-2">
+            <Zap className="h-5 w-5 text-yellow-500" />
+            Active Training Console
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {approvedBookings.map(booking => (
+              <Card key={booking.id} className="tech-gradient border-0 text-white rounded-3xl overflow-hidden shadow-2xl">
+                <CardHeader className="pb-2">
+                  <div className="flex justify-between items-start">
+                    <Badge className="bg-white/20 hover:bg-white/30 text-[10px] border-0">Live Session</Badge>
+                    <span className="text-[10px] opacity-70 font-mono">#{booking.id.slice(0, 4)}</span>
+                  </div>
+                  <CardTitle className="text-lg mt-2">{booking.machineName}</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-black/20 p-3 rounded-2xl">
+                      <div className="flex items-center gap-2 text-[10px] opacity-70 mb-1 font-bold uppercase tracking-wider">
+                        <Thermometer className="h-3 w-3" /> Temp
+                      </div>
+                      <p className="text-xl font-bold">42°C</p>
+                    </div>
+                    <div className="bg-black/20 p-3 rounded-2xl">
+                      <div className="flex items-center gap-2 text-[10px] opacity-70 mb-1 font-bold uppercase tracking-wider">
+                        <Activity className="h-3 w-3" /> Vibration
+                      </div>
+                      <p className="text-xl font-bold">0.02mm</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider opacity-70">
+                      <span>Milling Completion</span>
+                      <span>65%</span>
+                    </div>
+                    <Progress value={65} className="h-1.5 bg-white/10" />
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <Card className="lg:col-span-2 border-white/5 bg-white/[0.02] rounded-3xl overflow-hidden shadow-xl border">

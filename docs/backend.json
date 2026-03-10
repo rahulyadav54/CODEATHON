@@ -26,7 +26,26 @@
         "centerId": { "type": "string" },
         "status": { "type": "string", "enum": ["Available", "In Use", "Under Maintenance"] },
         "usageHours": { "type": "number" },
-        "healthScore": { "type": "number" }
+        "healthScore": { "type": "number" },
+        "temperature": { "type": "number" },
+        "vibration": { "type": "number" }
+      }
+    },
+    "Booking": {
+      "title": "Booking",
+      "description": "Machine reservation data.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "studentId": { "type": "string" },
+        "studentName": { "type": "string" },
+        "machineId": { "type": "string" },
+        "machineName": { "type": "string" },
+        "centerId": { "type": "string" },
+        "timeSlot": { "type": "string" },
+        "date": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"] },
+        "createdAt": { "type": "object" }
       }
     }
   },
@@ -41,6 +60,10 @@
     "/machines/{machineId}": {
       "schema": "#/entities/Machine",
       "description": "Fleet inventory data."
+    },
+    "/bookings/{bookingId}": {
+      "schema": "#/entities/Booking",
+      "description": "Training reservations."
     }
   }
 }

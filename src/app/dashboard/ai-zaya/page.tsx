@@ -92,7 +92,7 @@ export default function AiZayaPage() {
           role: profile.role || 'Student',
           skillLevel: profile.skillLevel || 'Beginner',
           totalHours: profile.totalHours || 0,
-          bookingHistory: [] // Can be extended with real booking history
+          bookingHistory: []
         },
         machineFleet: machines.map(m => ({
           id: m.id,
