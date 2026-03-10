@@ -41,7 +41,7 @@ export default function DashboardLayout({
               <SidebarTrigger className="text-muted-foreground" />
               <div className="flex items-center gap-2 md:hidden">
                  <Cpu className="h-5 w-5 text-primary" />
-                 <span className="text-sm font-headline font-bold">CODEATHON</span>
+                 <span className="text-sm font-headline font-bold">CODEATHON AI</span>
               </div>
               <div className="hidden md:flex relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />

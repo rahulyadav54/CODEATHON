@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
   Cpu, ShieldCheck, GraduationCap, Settings, 
-  ArrowRight, Loader2, Mail, Lock, Sparkles
+  ArrowRight, Loader2, Mail, Lock
 } from 'lucide-react';
 import { auth, db, useUser } from '@/firebase';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from 'firebase/auth';
@@ -48,7 +48,7 @@ export default function LoginPage() {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await setDoc(doc(db, 'users', userCredential.user.uid), {
           id: userCredential.user.uid,
-          name: name || userCredential.user.email?.split('@')[0] || 'Trainee',
+          name: name || userCredential.user.email?.split('@')[0] || 'Operator',
           email: userCredential.user.email,
           role: role,
           skillLevel: 'Beginner',
@@ -83,7 +83,7 @@ export default function LoginPage() {
       if (!userDoc.exists()) {
         await setDoc(userDocRef, {
           id: result.user.uid,
-          name: result.user.displayName || 'Trainee',
+          name: result.user.displayName || 'Operator',
           email: result.user.email,
           role: 'Student',
           skillLevel: 'Beginner',
@@ -129,7 +129,6 @@ export default function LoginPage() {
           transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
           className="absolute bottom-[-10%] right-[-5%] w-[60%] h-[60%] bg-purple-600/20 rounded-full blur-[120px]" 
         />
-        <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay" />
       </div>
 
       <div className="w-full max-w-xl relative z-10">
