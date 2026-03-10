@@ -167,67 +167,74 @@ export default function DashboardOverview() {
         {/* Sidebar Content - Role Dependent */}
         <div className="space-y-6">
           {role === 'Admin' ? (
-            /* ADMIN ONLY: Real-time Analytics Sidebar Card */
-            <Card className="border-white/10 bg-[#1a1c24] rounded-[2.5rem] overflow-hidden shadow-2xl border flex flex-col h-full min-h-[600px]">
+            /* ADMIN ONLY: Real-time Analytics Command Card */
+            <Card className="border-primary/20 bg-[#1a1c24] rounded-[2.5rem] overflow-hidden shadow-2xl border flex flex-col min-h-[600px] animate-in slide-in-from-right duration-500">
               <CardHeader className="p-8 pb-4">
                 <div className="flex items-center gap-3">
-                  <BarChart3 className="h-5 w-5 text-primary" />
+                  <div className="p-2 rounded-xl bg-primary/10 border border-primary/20">
+                    <BarChart3 className="h-5 w-5 text-primary" />
+                  </div>
                   <CardTitle className="text-lg font-headline font-bold">Real-time Analytics</CardTitle>
                 </div>
+                <CardDescription className="text-[10px] uppercase font-bold tracking-widest mt-2 opacity-50">Global Node Intelligence</CardDescription>
               </CardHeader>
               <CardContent className="px-8 pb-8 space-y-10 flex-1">
                 {/* 4-Stat Grid */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
-                    <span className="text-2xl font-bold text-primary">100%</span>
-                    <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Utilization Rate</span>
+                  <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 flex flex-col items-center justify-center text-center space-y-1 group hover:bg-white/[0.04] transition-all">
+                    <span className="text-2xl font-bold text-primary group-hover:scale-110 transition-transform">100%</span>
+                    <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Utilization</span>
                   </div>
-                  <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
-                    <span className="text-2xl font-bold text-white">3h</span>
+                  <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 flex flex-col items-center justify-center text-center space-y-1 group hover:bg-white/[0.04] transition-all">
+                    <span className="text-2xl font-bold text-white group-hover:scale-110 transition-transform">3h</span>
                     <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Avg Downtime</span>
                   </div>
-                  <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
-                    <span className="text-2xl font-bold text-primary flex items-center"><IndianRupee className="h-4 w-4 mr-0.5" /> 4500</span>
+                  <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 flex flex-col items-center justify-center text-center space-y-1 group hover:bg-white/[0.04] transition-all">
+                    <span className="text-2xl font-bold text-primary flex items-center group-hover:scale-110 transition-transform"><IndianRupee className="h-4 w-4 mr-0.5" /> 4500</span>
                     <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Monthly Cost</span>
                   </div>
-                  <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
-                    <span className="text-2xl font-bold text-white">46%</span>
+                  <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 flex flex-col items-center justify-center text-center space-y-1 group hover:bg-white/[0.04] transition-all">
+                    <span className="text-2xl font-bold text-white group-hover:scale-110 transition-transform">46%</span>
                     <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">OEE Index</span>
                   </div>
                 </div>
 
                 {/* Machine Utilization Bars */}
                 <div className="space-y-6">
-                  <h3 className="text-xs font-bold uppercase tracking-[0.1em] text-white/80">Machine Utilization</h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold uppercase tracking-[0.1em] text-white/80">Machine Utilization</h3>
+                    <TrendingUp className="h-4 w-4 text-green-500 opacity-50" />
+                  </div>
                   <div className="space-y-5">
                     <div className="space-y-2">
                       <div className="flex justify-between items-end">
                         <div className="flex flex-col">
-                          <span className="text-xs font-bold">CNC</span>
-                          <span className="text-[10px] text-muted-foreground">Machine-01</span>
+                          <span className="text-xs font-bold">CNC Systems</span>
+                          <span className="text-[10px] text-muted-foreground">Master Node 101</span>
                         </div>
-                        <span className="text-xs font-bold">100%</span>
+                        <span className="text-xs font-bold text-primary">100%</span>
                       </div>
-                      <Progress value={100} className="h-2.5 bg-white/5 [&>div]:bg-primary" />
+                      <Progress value={100} className="h-2 bg-white/5 [&>div]:bg-primary" />
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between items-end">
                         <div className="flex flex-col">
-                          <span className="text-xs font-bold">Welding</span>
-                          <span className="text-[10px] text-muted-foreground">Station-02</span>
+                          <span className="text-xs font-bold">Welding Simulators</span>
+                          <span className="text-[10px] text-muted-foreground">Station B-02</span>
                         </div>
-                        <span className="text-xs font-bold">100%</span>
+                        <span className="text-xs font-bold text-primary">100%</span>
                       </div>
-                      <Progress value={100} className="h-2.5 bg-white/5 [&>div]:bg-primary" />
+                      <Progress value={100} className="h-2 bg-white/5 [&>div]:bg-primary" />
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between items-end">
                         <div className="flex flex-col">
-                          <span className="text-xs font-bold">3D Printer-03</span>
+                          <span className="text-xs font-bold">3D Printing Array</span>
+                          <span className="text-[10px] text-muted-foreground">Additive-03</span>
                         </div>
-                        <span className="text-xs font-bold">100%</span>
+                        <span className="text-xs font-bold text-primary">100%</span>
                       </div>
-                      <Progress value={100} className="h-2.5 bg-white/5 [&>div]:bg-primary" />
+                      <Progress value={100} className="h-2 bg-white/5 [&>div]:bg-primary" />
                     </div>
                   </div>
                 </div>
@@ -235,13 +242,13 @@ export default function DashboardOverview() {
                 {/* Recent Alerts Footer */}
                 <div className="pt-6 border-t border-white/5">
                   <div className="flex items-center gap-2 mb-4">
-                    <AlertTriangle className="h-4 w-4 text-orange-500" />
-                    <span className="text-xs font-bold uppercase tracking-wider">Recent Alerts</span>
+                    <AlertTriangle className="h-4 w-4 text-orange-500 animate-pulse" />
+                    <span className="text-xs font-bold uppercase tracking-wider text-orange-500">Live System Alerts</span>
                   </div>
                   <div className="space-y-3">
-                    <div className="p-3 rounded-xl bg-orange-500/5 border border-orange-500/10 flex items-center justify-between">
-                      <span className="text-[10px] font-medium text-orange-200">CNC-101 Peak Temperature</span>
-                      <span className="text-[8px] text-muted-foreground uppercase">2m ago</span>
+                    <div className="p-4 rounded-2xl bg-orange-500/5 border border-orange-500/10 flex items-center justify-between group cursor-default">
+                      <span className="text-[10px] font-medium text-orange-200">CNC-101 Thermal Peak</span>
+                      <Badge variant="outline" className="text-[8px] border-orange-500/20 text-orange-500 uppercase">2m ago</Badge>
                     </div>
                   </div>
                 </div>
