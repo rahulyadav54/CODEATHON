@@ -33,7 +33,8 @@ export default function LoginPage() {
 
   // Redirection logic based on role
   const redirectBasedOnRole = (userRole: string) => {
-    toast({ title: "Access Granted", description: `Synchronizing ${userRole} portal...` });
+    const roleLabel = userRole === 'Technician' ? 'Teacher' : userRole === 'Trainee' ? 'Student' : userRole;
+    toast({ title: "Access Granted", description: `Synchronizing ${roleLabel} portal...` });
     router.push('/dashboard');
   };
 
@@ -61,7 +62,7 @@ export default function LoginPage() {
           id: userCredential.user.uid,
           name: name,
           email: userCredential.user.email,
-          role: role,
+          role: role, // Saves 'Admin', 'Technician', or 'Trainee'
           skillLevel: 'Beginner',
           totalHours: 0,
           createdAt: new Date().toISOString()
@@ -77,14 +78,16 @@ export default function LoginPage() {
           const fetchedRole = userDoc.data().role;
           redirectBasedOnRole(fetchedRole || 'Trainee');
         } else {
-          await setDoc(doc(db, 'users', userCredential.user.uid), {
+          // Fallback if doc is missing but auth exists
+          const defaultData = {
             id: userCredential.user.uid,
             email: userCredential.user.email,
             role: 'Trainee',
             skillLevel: 'Beginner',
             totalHours: 0,
             createdAt: new Date().toISOString()
-          });
+          };
+          await setDoc(doc(db, 'users', userCredential.user.uid), defaultData);
           redirectBasedOnRole('Trainee');
         }
       }

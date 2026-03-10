@@ -41,13 +41,13 @@ export default function DashboardLayout({
       }
       
       // Technician/Teacher only routes
-      if (pathname.includes('/technician') && role === 'Trainee') {
+      if (pathname.includes('/technician') && (role !== 'Technician' && role !== 'Admin')) {
         router.push('/dashboard');
       }
 
       // Student/Trainee only routes
-      if (pathname.includes('/bookings') && role !== 'Trainee' && role !== 'Admin') {
-         // Allow Admin to see but maybe not standard technician
+      if (pathname.includes('/bookings') && (role !== 'Trainee' && role !== 'Admin')) {
+         // Allow Admin to see but maybe not standard teacher
          // router.push('/dashboard');
       }
     }
