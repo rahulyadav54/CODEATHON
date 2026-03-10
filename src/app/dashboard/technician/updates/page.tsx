@@ -13,6 +13,7 @@ import { collection, doc, updateDoc, serverTimestamp, addDoc } from 'firebase/fi
 import { Activity, Thermometer, Zap, Wrench, Loader2, Save, History, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Slider } from '@/components/ui/slider';
+import { cn } from '@/lib/utils';
 
 export default function TechnicianUpdatesPage() {
   const { toast } = useToast();
@@ -49,12 +50,12 @@ export default function TechnicianUpdatesPage() {
       await updateDoc(machineRef, updateData);
 
       // Log maintenance report
-      await addDoc(collection(db, 'maintenanceLogs'), {
+      await addDoc(collection(db, 'usageLogs'), {
         machineId: selectedMachineId,
         machineName: selectedMachine?.name,
         type: 'Telemetry Update',
-        healthScore: health[0],
-        timestamp: serverTimestamp()
+        status: 'Maintenance Logged',
+        createdAt: serverTimestamp()
       });
 
       toast({ title: "Update Successful", description: `${selectedMachine?.name} telemetry synchronized.` });
