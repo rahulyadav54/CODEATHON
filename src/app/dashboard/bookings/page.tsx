@@ -5,7 +5,7 @@ import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Calendar as CalendarIcon, Clock, BadgeInfo, Loader2, Activity, Zap, Thermometer } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, BadgeInfo, Loader2, Activity, Zap, Thermometer, User as UserIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -47,6 +47,11 @@ export default function BookingsPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!db || !user || !profile) return;
+    if (!date) {
+      toast({ variant: "destructive", title: "Date Missing", description: "Please select a training date from the calendar." });
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
@@ -58,12 +63,12 @@ export default function BookingsPage() {
         machineName: selectedMachine?.name || selectedMachineId,
         centerId: selectedMachine?.centerId || 'default',
         timeSlot: selectedSlot,
-        date: date?.toISOString(),
+        date: date.toISOString(),
         status: 'Pending',
         createdAt: serverTimestamp()
       });
       
-      toast({ title: "Booking Submitted", description: "Your request is pending trainer approval." });
+      toast({ title: "Booking Submitted", description: "Your request is pending instructor approval." });
       setSelectedMachineId('');
       setSelectedSlot('');
     } catch (error: any) {
@@ -79,52 +84,60 @@ export default function BookingsPage() {
     <div className="space-y-8 animate-in fade-in duration-700 pb-10">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-headline font-bold">Machine Portal</h1>
-          <p className="text-muted-foreground text-sm">Reserve equipment and track your training sessions.</p>
+          <h1 className="text-3xl font-headline font-bold">Equipment Portal</h1>
+          <p className="text-muted-foreground text-sm">Reserve advanced machinery and track your learning progress.</p>
         </div>
-        <div className="flex items-center gap-2 p-2 rounded-xl bg-white/5 border border-white/10">
-           <Badge variant="outline" className="bg-primary/10 text-primary border-0 rounded-lg">{profile?.skillLevel || 'Beginner'}</Badge>
-           <span className="text-xs font-bold text-muted-foreground">{profile?.totalHours || 0} hrs trained</span>
+        <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-white/5 border border-white/10 shadow-xl">
+           <Badge variant="outline" className="bg-primary/10 text-primary border-0 rounded-xl px-4 py-1.5 font-bold uppercase tracking-widest text-[10px]">
+            Tier: {profile?.skillLevel || 'Beginner'}
+           </Badge>
+           <div className="flex flex-col">
+            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">Total Experience</span>
+            <span className="text-sm font-bold text-white">{profile?.totalHours || 0} Hrs</span>
+           </div>
         </div>
       </div>
 
       {approvedBookings.length > 0 && (
         <section className="space-y-4">
-          <h2 className="text-lg font-headline font-bold flex items-center gap-2">
-            <Zap className="h-5 w-5 text-yellow-500" />
-            Active Training Console
+          <h2 className="text-xl font-headline font-bold flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-yellow-500/20"><Zap className="h-5 w-5 text-yellow-500" /></div>
+            Live Operational Nodes
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {approvedBookings.map(booking => (
-              <Card key={booking.id} className="tech-gradient border-0 text-white rounded-3xl overflow-hidden shadow-2xl">
+              <Card key={booking.id} className="tech-gradient border-0 text-white rounded-[2.5rem] overflow-hidden shadow-2xl relative">
+                <div className="absolute top-0 right-0 p-8 opacity-10">
+                  <Activity className="h-20 w-20" />
+                </div>
                 <CardHeader className="pb-2">
-                  <div className="flex justify-between items-start">
-                    <Badge className="bg-white/20 hover:bg-white/30 text-[10px] border-0">Live Session</Badge>
-                    <span className="text-[10px] opacity-70 font-mono">#{booking.id.slice(0, 4)}</span>
+                  <div className="flex justify-between items-start relative z-10">
+                    <Badge className="bg-white/20 hover:bg-white/30 text-[9px] uppercase tracking-widest border-0 rounded-full px-3">Active Session</Badge>
+                    <span className="text-[10px] opacity-70 font-mono font-bold">NODE_{booking.id.slice(0, 4).toUpperCase()}</span>
                   </div>
-                  <CardTitle className="text-lg mt-2">{booking.machineName}</CardTitle>
+                  <CardTitle className="text-2xl mt-4 font-headline">{booking.machineName}</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6 relative z-10">
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-black/20 p-3 rounded-2xl">
-                      <div className="flex items-center gap-2 text-[10px] opacity-70 mb-1 font-bold uppercase tracking-wider">
-                        <Thermometer className="h-3 w-3" /> Temp
+                    <div className="bg-black/20 p-4 rounded-2xl border border-white/5">
+                      <div className="flex items-center gap-2 text-[10px] opacity-70 mb-2 font-bold uppercase tracking-widest">
+                        <Thermometer className="h-3.5 w-3.5" /> Core Temp
                       </div>
-                      <p className="text-xl font-bold">42°C</p>
+                      <p className="text-2xl font-bold">42.4°C</p>
                     </div>
-                    <div className="bg-black/20 p-3 rounded-2xl">
-                      <div className="flex items-center gap-2 text-[10px] opacity-70 mb-1 font-bold uppercase tracking-wider">
-                        <Activity className="h-3 w-3" /> Vibration
+                    <div className="bg-black/20 p-4 rounded-2xl border border-white/5">
+                      <div className="flex items-center gap-2 text-[10px] opacity-70 mb-2 font-bold uppercase tracking-widest">
+                        <Activity className="h-3.5 w-3.5" /> Vibration
                       </div>
-                      <p className="text-xl font-bold">0.02mm</p>
+                      <p className="text-2xl font-bold">0.024mm</p>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-wider opacity-70">
-                      <span>Milling Completion</span>
+                  <div className="space-y-3">
+                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest opacity-80">
+                      <span>Module Completion</span>
                       <span>65%</span>
                     </div>
-                    <Progress value={65} className="h-1.5 bg-white/10" />
+                    <Progress value={65} className="h-2 bg-white/10" />
                   </div>
                 </CardContent>
               </Card>
@@ -134,62 +147,71 @@ export default function BookingsPage() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <Card className="lg:col-span-2 border-white/5 bg-white/[0.02] rounded-3xl overflow-hidden shadow-xl border">
-          <CardHeader className="bg-white/[0.03] border-b border-white/5">
-            <CardTitle className="font-headline text-xl">New Reservation Request</CardTitle>
-            <CardDescription>Select a machine. Trainers will review your skill level before approval.</CardDescription>
+        <Card className="lg:col-span-2 border-white/5 bg-white/[0.02] rounded-[2.5rem] overflow-hidden shadow-2xl border">
+          <CardHeader className="bg-white/[0.03] border-b border-white/5 p-8">
+            <CardTitle className="font-headline text-2xl">New Session Reservation</CardTitle>
+            <CardDescription className="text-base">Target equipment must match your security tier and training module requirements.</CardDescription>
           </CardHeader>
           <CardContent className="p-8">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Target Machine</Label>
+            <form onSubmit={handleSubmit} className="space-y-10">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                <div className="space-y-8">
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">Target Equipment Node</Label>
                     <Select onValueChange={setSelectedMachineId} value={selectedMachineId}>
-                      <SelectTrigger className="bg-white/5 border-white/10 rounded-xl h-11">
-                        <SelectValue placeholder="Choose equipment" />
+                      <SelectTrigger className="bg-white/5 border-white/10 rounded-2xl h-14 text-base focus:ring-primary/50">
+                        <SelectValue placeholder="Identify machine..." />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-card border-white/10 rounded-2xl">
                         {machines.filter(m => m.status === 'Available').map(m => (
-                          <SelectItem key={m.id} value={m.id}>{m.name} ({m.type})</SelectItem>
+                          <SelectItem key={m.id} value={m.id} className="rounded-xl py-3 px-4">{m.name} ({m.type})</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Available Slots</Label>
-                    <div className="grid grid-cols-1 gap-2">
+                  <div className="space-y-3">
+                    <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">Operational Slot</Label>
+                    <div className="grid grid-cols-1 gap-3">
                       {timeSlots.map(slot => (
                         <Button
                           key={slot}
                           type="button"
                           variant={selectedSlot === slot ? 'default' : 'outline'}
                           className={cn(
-                            "justify-start rounded-xl h-11 px-4 border-white/10",
-                            selectedSlot === slot ? "bg-primary border-0 text-white" : "bg-white/5 hover:bg-white/10"
+                            "justify-start rounded-2xl h-14 px-6 border-white/10 transition-all font-medium",
+                            selectedSlot === slot 
+                              ? "bg-primary border-0 text-white shadow-lg shadow-primary/20 scale-[1.02]" 
+                              : "bg-white/5 hover:bg-white/10 hover:border-white/20"
                           )}
                           onClick={() => setSelectedSlot(slot)}
                         >
-                          <Clock className="mr-2 h-4 w-4" />
-                          <span className="text-xs">{slot}</span>
+                          <Clock className={cn("mr-3 h-5 w-5", selectedSlot === slot ? "text-white" : "text-primary")} />
+                          <span className="text-sm">{slot}</span>
                         </Button>
                       ))}
                     </div>
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                   <Label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Session Date</Label>
-                   <div className="border border-white/10 rounded-2xl p-4 bg-white/5">
-                      <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-md" />
+                <div className="space-y-3">
+                   <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">Session Timeline (Calendar)</Label>
+                   <div className="border border-white/10 rounded-[2rem] p-6 bg-white/[0.03] shadow-inner">
+                      <Calendar 
+                        mode="single" 
+                        selected={date} 
+                        onSelect={setDate} 
+                        className="rounded-md w-full"
+                        disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
+                      />
                    </div>
+                   <p className="text-[10px] text-center text-muted-foreground italic mt-2">Select an available date for deployment.</p>
                 </div>
               </div>
 
-              <div className="pt-4">
-                <Button size="lg" className="w-full tech-gradient border-0 rounded-xl h-12 text-sm font-bold" disabled={!selectedMachineId || !selectedSlot || isSubmitting}>
-                  {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : "Submit for Approval"}
+              <div className="pt-4 border-t border-white/5">
+                <Button size="lg" className="w-full tech-gradient border-0 rounded-2xl h-16 text-base font-bold shadow-2xl shadow-primary/20 hover:scale-[1.01] transition-transform" disabled={!selectedMachineId || !selectedSlot || isSubmitting}>
+                  {isSubmitting ? <Loader2 className="h-6 w-6 animate-spin mr-3" /> : "Initiate Reservation Protocol"}
                 </Button>
               </div>
             </form>
@@ -197,48 +219,59 @@ export default function BookingsPage() {
         </Card>
 
         <div className="space-y-6">
-           <Card className="border-white/5 bg-white/[0.02] rounded-3xl overflow-hidden shadow-xl border">
-             <CardHeader>
-               <CardTitle className="text-lg font-headline">Booking Status</CardTitle>
+           <Card className="border-white/5 bg-white/[0.02] rounded-[2.5rem] overflow-hidden shadow-2xl border">
+             <CardHeader className="bg-white/[0.03] border-b border-white/5 px-8 py-6">
+               <CardTitle className="text-xl font-headline">Uplink Status</CardTitle>
              </CardHeader>
-             <CardContent className="space-y-4">
+             <CardContent className="px-8 py-8 space-y-6">
                {loadingBookings ? (
-                 <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
+                 <div className="flex justify-center py-12"><Loader2 className="h-10 w-10 animate-spin text-primary opacity-50" /></div>
                ) : (
                  myBookings.map(booking => (
-                   <div key={booking.id} className="p-4 rounded-2xl bg-white/5 border border-white/5 group">
-                     <div className="flex items-center justify-between mb-3">
+                   <div key={booking.id} className="p-6 rounded-3xl bg-white/[0.03] border border-white/5 group hover:bg-white/[0.05] transition-all">
+                     <div className="flex items-center justify-between mb-4">
                        <Badge className={cn(
-                         "rounded-md text-[10px] border-0",
-                         booking.status === 'Approved' ? 'bg-green-500/10 text-green-500' :
-                         booking.status === 'Pending' ? 'bg-yellow-500/10 text-yellow-500' :
-                         'bg-red-500/10 text-red-500'
+                         "rounded-xl px-4 py-1 text-[9px] uppercase font-bold tracking-widest border-0",
+                         booking.status === 'Approved' ? 'bg-green-500/20 text-green-500' :
+                         booking.status === 'Pending' ? 'bg-yellow-500/20 text-yellow-500' :
+                         'bg-red-500/20 text-red-500'
                        )}>
                          {booking.status}
                        </Badge>
-                       <span className="text-[10px] font-mono text-primary font-bold">#{booking.id.slice(0, 4)}</span>
+                       <span className="text-[10px] font-mono text-primary font-bold bg-primary/10 px-2 py-0.5 rounded-md">#{booking.id.slice(0, 4).toUpperCase()}</span>
                      </div>
-                     <h4 className="font-bold text-sm text-white group-hover:text-primary transition-colors">{booking.machineName || booking.machineId}</h4>
-                     <p className="text-[10px] text-muted-foreground mt-1 flex items-center gap-1">
-                       <CalendarIcon className="h-3 w-3" /> {booking.date ? new Date(booking.date).toLocaleDateString() : 'N/A'} • {booking.timeSlot}
-                     </p>
+                     <h4 className="font-bold text-lg text-white group-hover:text-primary transition-colors">{booking.machineName}</h4>
+                     <div className="mt-4 space-y-2">
+                        <p className="text-[11px] text-muted-foreground flex items-center gap-2">
+                          <CalendarIcon className="h-3.5 w-3.5" /> {booking.date ? new Date(booking.date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground flex items-center gap-2">
+                          <Clock className="h-3.5 w-3.5" /> {booking.timeSlot}
+                        </p>
+                     </div>
                    </div>
                  ))
                )}
-               {!loadingBookings && myBookings.length === 0 && <p className="text-xs text-center text-muted-foreground py-4">No active bookings found.</p>}
+               {!loadingBookings && myBookings.length === 0 && (
+                <div className="text-center py-12 opacity-30">
+                  <BadgeInfo className="h-12 w-12 mx-auto mb-4" />
+                  <p className="text-xs font-bold uppercase tracking-widest">No Active Sessions</p>
+                </div>
+               )}
              </CardContent>
            </Card>
 
-           <Card className="border-white/5 bg-accent/5 border-accent/20 rounded-3xl overflow-hidden shadow-xl border">
-             <CardContent className="p-6 text-center space-y-4">
-                <div className="mx-auto p-3 rounded-2xl bg-accent/20 w-fit">
-                   <BadgeInfo className="h-6 w-6 text-accent" />
+           <Card className="border-white/5 bg-accent/10 border-accent/20 rounded-[2.5rem] overflow-hidden shadow-2xl border">
+             <CardContent className="p-10 text-center space-y-6">
+                <div className="mx-auto p-5 rounded-[2rem] bg-accent/20 w-fit relative">
+                   <BadgeInfo className="h-10 w-10 text-accent" />
+                   <div className="absolute -top-1 -right-1 h-4 w-4 bg-primary rounded-full animate-ping" />
                 </div>
                 <div>
-                  <h3 className="font-headline font-bold text-sm">Need a suggestion?</h3>
-                  <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">AI Zaya can analyze your skill level and recommend the best equipment for your next session.</p>
+                  <h3 className="font-headline font-bold text-lg">Predictive Guidance</h3>
+                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">Let AI Zaya analyze your skill telemetry and recommend the optimal training path.</p>
                 </div>
-                <Button variant="outline" className="rounded-xl border-accent/30 text-accent hover:bg-accent/10 w-full text-xs h-9">Ask Zaya</Button>
+                <Button variant="outline" className="rounded-2xl border-accent/30 text-accent hover:bg-accent/10 w-full text-xs h-12 font-bold uppercase tracking-widest">Consult Zaya Assistant</Button>
              </CardContent>
            </Card>
         </div>
@@ -246,3 +279,4 @@ export default function BookingsPage() {
     </div>
   );
 }
+
