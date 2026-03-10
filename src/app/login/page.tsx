@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
   Cpu, ShieldCheck, GraduationCap, Settings, 
-  ArrowRight, Loader2, Mail, Lock
+  ArrowRight, Loader2, Mail, Lock, User as UserIcon
 } from 'lucide-react';
 import { auth, db, useUser } from '@/firebase';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from 'firebase/auth';
@@ -23,7 +23,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const { user, loading } = useUser();
+  const { user, loading: authLoading } = useUser();
   
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
@@ -35,42 +35,73 @@ export default function LoginPage() {
 
   // Auth Guard: If already connected, push to dashboard
   useEffect(() => {
-    if (user && !isAuthenticating) {
+    if (user && !isAuthenticating && !authLoading) {
       router.push('/dashboard');
     }
-  }, [user, isAuthenticating, router]);
+  }, [user, isAuthenticating, authLoading, router]);
+
+  const validateForm = () => {
+    if (!email || !password) {
+      toast({ variant: "destructive", title: "Validation Error", description: "Email and password are required." });
+      return false;
+    }
+    if (isSignUp && !name) {
+      toast({ variant: "destructive", title: "Validation Error", description: "Operator name is required for registration." });
+      return false;
+    }
+    return true;
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isAuthenticating) return;
+    if (!validateForm()) return;
+
     setIsAuthenticating(true);
+    console.log(`Starting ${isSignUp ? 'Registration' : 'Login'}...`);
 
     try {
       if (isSignUp) {
-        // Create New Operator Node
+        // 1. Create New Operator Node in Firebase Auth
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        console.log("Auth Node Created:", userCredential.user.uid);
+
+        // 2. Initialize Operator Profile in Firestore
         await setDoc(doc(db, 'users', userCredential.user.uid), {
           id: userCredential.user.uid,
-          name: name || userCredential.user.email?.split('@')[0] || 'Operator',
+          name: name,
           email: userCredential.user.email,
           role: role,
           skillLevel: 'Beginner',
           totalHours: 0,
           createdAt: new Date().toISOString()
         });
-        toast({ title: "Node Established", description: "Your operator profile has been initialized." });
+        console.log("Firestore Profile Initialized");
+        
+        toast({ title: "Node Established", description: "Your operator profile has been successfully registered." });
       } else {
         // Authenticate Existing Node
         await signInWithEmailAndPassword(auth, email, password);
+        console.log("Auth Node Verified");
         toast({ title: "Access Granted", description: "Node connection verified." });
       }
-      router.push('/dashboard');
+      
+      // The useEffect will handle the redirection once the user state updates
     } catch (error: any) {
+      console.error("Auth Error:", error.code, error.message);
       let errorMessage = "Access denied by neural firewall.";
-      if (error.code === 'auth/wrong-password') errorMessage = "Incorrect security key.";
-      if (error.code === 'auth/user-not-found') errorMessage = "Credential ID not recognized.";
-      if (error.code === 'auth/invalid-email') errorMessage = "Invalid Credential ID format.";
-      if (error.code === 'auth/email-already-in-use') errorMessage = "Credential ID already registered.";
+      
+      if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        errorMessage = "Incorrect security key or credential.";
+      } else if (error.code === 'auth/user-not-found') {
+        errorMessage = "Credential ID not recognized.";
+      } else if (error.code === 'auth/email-already-in-use') {
+        errorMessage = "Credential ID already registered in the system.";
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = "Security key is too weak. Use at least 6 characters.";
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = "Invalid Credential ID format.";
+      }
       
       toast({
         variant: "destructive",
@@ -102,6 +133,7 @@ export default function LoginPage() {
           createdAt: new Date().toISOString()
         });
       }
+      toast({ title: "Google Auth Success", description: "Connection established via Google Core." });
       router.push('/dashboard');
     } catch (error: any) {
       toast({ variant: "destructive", title: "External Auth Error", description: error.message });
@@ -109,10 +141,13 @@ export default function LoginPage() {
     }
   };
 
-  if (loading) {
+  if (authLoading && !isAuthenticating) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#020617]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-xs text-muted-foreground uppercase tracking-widest font-bold">Verifying Neural Link...</p>
+        </div>
       </div>
     );
   }
@@ -186,14 +221,17 @@ export default function LoginPage() {
                     >
                       <div className="space-y-2">
                         <Label htmlFor="name" className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em] ml-1">Operator Name</Label>
-                        <Input 
-                          id="name" 
-                          placeholder="Full Name" 
-                          value={name}
-                          onChange={(e) => setName(e.target.value)}
-                          className="bg-white/[0.03] border-white/10 rounded-2xl h-14 text-sm focus:ring-blue-500/30 transition-all focus:border-blue-500/50"
-                          required
-                        />
+                        <div className="relative">
+                          <UserIcon className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20" />
+                          <Input 
+                            id="name" 
+                            placeholder="Full Name" 
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 text-sm focus:ring-blue-500/30 transition-all focus:border-blue-500/50"
+                            required={isSignUp}
+                          />
+                        </div>
                       </div>
 
                       <div className="space-y-4">
@@ -213,7 +251,7 @@ export default function LoginPage() {
                               <Label
                                 htmlFor={item.id}
                                 className={cn(
-                                  "flex flex-col items-center justify-center gap-3 p-4 rounded-2xl border cursor-pointer transition-all",
+                                  "flex flex-col items-center justify-center gap-3 p-4 rounded-2xl border cursor-pointer transition-all h-full",
                                   role === item.id 
                                     ? "bg-blue-600/10 border-blue-500/50 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.1)]" 
                                     : "bg-white/[0.02] border-white/5 text-white/30 hover:bg-white/5"
@@ -277,7 +315,10 @@ export default function LoginPage() {
                   disabled={isAuthenticating}
                 >
                   {isAuthenticating ? (
-                    <Loader2 className="h-6 w-6 animate-spin" />
+                    <div className="flex items-center gap-3">
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <span className="tracking-widest uppercase text-xs">Processing...</span>
+                    </div>
                   ) : (
                     <div className="flex items-center justify-center gap-3">
                       <span className="tracking-widest uppercase text-xs">{isSignUp ? 'Establish Node' : 'Initialize Connection'}</span>
