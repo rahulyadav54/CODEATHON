@@ -64,7 +64,7 @@ export function DashboardSidebar() {
                 className={cn(
                   "flex items-center gap-3 px-3 py-6 rounded-xl transition-all",
                   pathname === item.path 
-                    ? "bg-primary text-primary-foreground" 
+                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
                     : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
                 )}
               >
@@ -84,7 +84,7 @@ export function DashboardSidebar() {
         <div className="flex items-center justify-between group">
           <div className="flex items-center gap-3">
             <Avatar className="h-8 w-8 border border-primary/20">
-              <AvatarImage src="https://picsum.photos/seed/user1/40/40" />
+              <AvatarImage src="https://picsum.photos/seed/admin-avatar/40/40" />
               <AvatarFallback>AD</AvatarFallback>
             </Avatar>
             {state !== 'collapsed' && (
