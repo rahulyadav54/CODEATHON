@@ -33,7 +33,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuth, useFirestore, useUser, useDoc } from '@/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { signOut } from 'firebase/auth';
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 
 const navItems = [
@@ -146,7 +146,7 @@ export function DashboardSidebar() {
             </div>
           </DropdownMenuTrigger>
           <DropdownMenuContent side="right" align="end" className="w-56 bg-card border-white/10 rounded-2xl shadow-2xl">
-             <DropdownMenuLabel className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground px-4 py-3">Switch Perspective</DropdownMenuLabel>
+             <DropdownMenuLabel className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground px-4 py-3">Access Tier</DropdownMenuLabel>
              <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer" onClick={() => handleRoleSwitch('Admin')}><Settings className="h-4 w-4" /> Overlord View</DropdownMenuItem>
              <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer" onClick={() => handleRoleSwitch('Trainer')}><ShieldCheck className="h-4 w-4" /> Shield View</DropdownMenuItem>
              <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer" onClick={() => handleRoleSwitch('Student')}><UserCircle className="h-4 w-4" /> Trainee View</DropdownMenuItem>

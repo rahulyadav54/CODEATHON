@@ -58,17 +58,17 @@ export default function LoginPage() {
           totalHours: 0,
           createdAt: new Date().toISOString()
         });
-        toast({ title: "Account Created", description: `Welcome to CODEATHON AI as ${role === 'Student' ? 'a Trainee' : role === 'Trainer' ? 'a Shield' : 'an Overlord'}.` });
+        toast({ title: "Account Created", description: `Welcome to CODEATHON AI as a ${role === 'Student' ? 'Trainee' : role === 'Trainer' ? 'Shield' : 'Overlord'}.` });
       } else {
         await signInWithEmailAndPassword(auth, email, password);
-        toast({ title: "Access Granted", description: "Successfully authenticated to the command center." });
+        toast({ title: "Access Granted", description: "Successfully established node connection." });
       }
       router.push('/dashboard');
     } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Authentication Failed",
-        description: error.message || "Please check your credentials."
+        description: error.message || "Invalid operator credentials."
       });
       setIsAuthenticating(false);
     }
@@ -97,7 +97,7 @@ export default function LoginPage() {
       }
       router.push('/dashboard');
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Google Login Failed", description: error.message });
+      toast({ variant: "destructive", title: "Auth Failed", description: error.message });
       setIsAuthenticating(false);
     }
   };
@@ -134,7 +134,6 @@ export default function LoginPage() {
           className="absolute bottom-[-10%] right-[-5%] w-[60%] h-[60%] bg-purple-600/20 rounded-full blur-[120px]" 
         />
         <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] mix-blend-overlay" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/80" />
       </div>
 
       <div className="w-full max-w-xl relative z-10">
@@ -144,17 +143,17 @@ export default function LoginPage() {
           transition={{ duration: 0.8, ease: "easeOut" }}
           className="text-center space-y-6 mb-10"
         >
-          <div className="inline-flex items-center gap-3 p-2 px-5 rounded-full bg-white/5 border border-white/10 backdrop-blur-xl shadow-[0_0_40px_rgba(0,0,0,0.5)]">
-            <div className="p-2 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+          <div className="inline-flex items-center gap-3 p-2 px-5 rounded-full bg-white/5 border border-white/10 backdrop-blur-xl">
+            <div className="p-2 rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
               <Cpu className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-headline font-bold tracking-[0.05em] text-white">CODEATHON <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">AI</span></span>
+            <span className="text-xl font-headline font-bold tracking-widest text-white">CODEATHON <span className="text-blue-400">AI</span></span>
           </div>
           <div className="space-y-3">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-headline font-bold text-white tracking-tight leading-[1.1]">
-              {isSignUp ? 'Initialize Deployment' : 'Operator Access'}
+            <h1 className="text-4xl md:text-5xl font-headline font-bold text-white tracking-tight leading-tight">
+              {isSignUp ? 'New Operator' : 'Operator Access'}
             </h1>
-            <p className="text-blue-100/50 text-sm md:text-base max-w-lg mx-auto leading-relaxed font-light">
+            <p className="text-white/40 text-sm md:text-base max-w-lg mx-auto font-light">
               Centralized Intelligence Layer for Next-Gen Skill Development
             </p>
           </div>
@@ -165,35 +164,31 @@ export default function LoginPage() {
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <Card className="border-white/10 bg-black/40 backdrop-blur-[40px] rounded-[2.5rem] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.8)] border relative group">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[2px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
-            
+          <Card className="border-white/10 bg-black/40 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden shadow-2xl border relative">
             <CardContent className="p-8 md:p-14 space-y-8">
               <form onSubmit={handleAuth} className="space-y-7">
                 <AnimatePresence mode="wait">
                   {isSignUp && (
                     <motion.div 
-                      initial={{ opacity: 0, height: 0, y: -10 }}
-                      animate={{ opacity: 1, height: 'auto', y: 0 }}
-                      exit={{ opacity: 0, height: 0, y: -10 }}
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
                       className="space-y-7 overflow-hidden"
                     >
                       <div className="space-y-2">
-                        <Label htmlFor="name" className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em] ml-1">Operator Designation</Label>
-                        <div className="relative group/input">
-                          <Input 
-                            id="name" 
-                            placeholder="Full Name" 
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="bg-white/[0.03] border-white/10 rounded-2xl h-14 text-sm focus:ring-blue-500/30 focus:border-blue-500/50 transition-all shadow-inner pl-6"
-                            required
-                          />
-                        </div>
+                        <Label htmlFor="name" className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em] ml-1">Operator Name</Label>
+                        <Input 
+                          id="name" 
+                          placeholder="Full Name" 
+                          value={name}
+                          onChange={(e) => setName(e.target.value)}
+                          className="bg-white/[0.03] border-white/10 rounded-2xl h-14 text-sm focus:ring-blue-500/30"
+                          required
+                        />
                       </div>
 
                       <div className="space-y-4">
-                        <Label className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em] ml-1">Security Clearance Level</Label>
+                        <Label className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em] ml-1">Security Level</Label>
                         <RadioGroup 
                           value={role} 
                           onValueChange={(v: any) => setRole(v)} 
@@ -209,19 +204,14 @@ export default function LoginPage() {
                               <Label
                                 htmlFor={item.id}
                                 className={cn(
-                                  "flex flex-col items-center justify-center gap-3 p-4 rounded-2xl border cursor-pointer transition-all duration-300 relative overflow-hidden group/role",
+                                  "flex flex-col items-center justify-center gap-3 p-4 rounded-2xl border cursor-pointer transition-all",
                                   role === item.id 
-                                    ? "bg-blue-600/10 border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.15)]" 
-                                    : "bg-white/[0.02] border-white/5 hover:bg-white/5 hover:border-white/10"
+                                    ? "bg-blue-600/10 border-blue-500/50 text-blue-400" 
+                                    : "bg-white/[0.02] border-white/5 text-white/30 hover:bg-white/5"
                                 )}
                               >
-                                <item.icon className={cn("h-6 w-6 transition-all duration-500", role === item.id ? "text-blue-400 scale-110 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]" : "text-white/30")} />
-                                <span className={cn("text-[10px] font-bold uppercase tracking-widest text-center", role === item.id ? "text-blue-400" : "text-white/30")}>
-                                  {item.label}
-                                </span>
-                                {role === item.id && (
-                                  <motion.div layoutId="role-bg" className="absolute inset-0 bg-blue-500/5 -z-10" />
-                                )}
+                                <item.icon className="h-6 w-6" />
+                                <span className="text-[10px] font-bold uppercase tracking-widest">{item.label}</span>
                               </Label>
                             </div>
                           ))}
@@ -233,118 +223,93 @@ export default function LoginPage() {
 
                 <div className="space-y-5">
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em] ml-1">Fleet Credential</Label>
-                    <div className="relative group/input">
-                      <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20 group-focus-within/input:text-blue-400 transition-colors" />
+                    <Label htmlFor="email" className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em] ml-1">Credential ID</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20" />
                       <Input 
                         id="email" 
                         type="email" 
                         placeholder="operator@codeathon.ai" 
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 text-sm focus:ring-blue-500/30 focus:border-blue-500/50 transition-all"
+                        className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 text-sm focus:ring-blue-500/30"
                         required
                       />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <div className="flex justify-between items-center ml-1">
-                      <Label htmlFor="password" className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em]">Neural Key</Label>
-                      <button type="button" className="text-[10px] uppercase font-bold text-blue-400/40 hover:text-blue-400 transition-colors">Forgot Key?</button>
-                    </div>
-                    <div className="relative group/input">
-                      <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20 group-focus-within/input:text-blue-400 transition-colors" />
+                    <Label htmlFor="password" className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em] ml-1">Security Key</Label>
+                    <div className="relative">
+                      <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20" />
                       <Input 
                         id="password" 
                         type="password" 
                         placeholder="••••••••" 
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 text-sm focus:ring-blue-500/30 focus:border-blue-500/50 transition-all"
+                        className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 text-sm focus:ring-blue-500/30"
                         required
                       />
                     </div>
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-2 ml-1">
-                  <Checkbox 
-                    id="remember" 
-                    checked={rememberMe} 
-                    onCheckedChange={(v: boolean) => setRememberMe(v)}
-                    className="border-white/10 data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600"
-                  />
-                  <label htmlFor="remember" className="text-xs text-white/40 cursor-pointer select-none">Remember this terminal</label>
+                <div className="flex items-center justify-between ml-1">
+                   <div className="flex items-center space-x-2">
+                      <Checkbox id="remember" checked={rememberMe} onCheckedChange={(v: any) => setRememberMe(v)} className="border-white/10" />
+                      <label htmlFor="remember" className="text-xs text-white/40">Remember Node</label>
+                   </div>
+                   <button type="button" className="text-[10px] uppercase font-bold text-blue-400/40 hover:text-blue-400 transition-colors">Recover Key</button>
                 </div>
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 border-0 rounded-2xl h-16 font-bold shadow-[0_10px_30px_rgba(59,130,246,0.3)] hover:shadow-[0_15px_40px_rgba(59,130,246,0.4)] active:scale-[0.98] transition-all text-white relative overflow-hidden group" 
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 border-0 rounded-2xl h-16 font-bold transition-all text-white group" 
                   disabled={isAuthenticating}
                 >
                   {isAuthenticating ? (
                     <Loader2 className="h-6 w-6 animate-spin" />
                   ) : (
                     <div className="flex items-center justify-center gap-3">
-                      {isSignUp ? <UserPlus className="h-5 w-5" /> : <LogIn className="h-5 w-5" />}
-                      <span className="tracking-widest uppercase text-xs">{isSignUp ? 'Initialize Node' : 'Establish Connection'}</span>
-                      <ArrowRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
+                      <span className="tracking-widest uppercase text-xs">{isSignUp ? 'Establish Node' : 'Initialize Connection'}</span>
+                      <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] pointer-events-none" />
                 </Button>
               </form>
 
               <div className="relative py-4">
                 <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-white/5"></span></div>
-                <div className="relative flex justify-center text-[9px] uppercase font-bold tracking-[0.3em]"><span className="bg-[#020617]/50 backdrop-blur-md px-4 text-white/20">Secure External Auth</span></div>
+                <div className="relative flex justify-center text-[9px] uppercase font-bold tracking-[0.3em]"><span className="bg-[#020617]/50 px-4 text-white/20">External Core Auth</span></div>
               </div>
 
-              <div className="grid grid-cols-1 gap-4">
-                <Button 
-                  variant="outline" 
-                  className="w-full border-white/10 rounded-2xl h-14 bg-white/[0.02] hover:bg-white/5 hover:border-white/20 transition-all flex items-center justify-center gap-3 font-semibold text-sm group/btn" 
-                  onClick={loginWithGoogle} 
-                  disabled={isAuthenticating}
-                >
-                  <svg className="h-5 w-5 transition-transform group-hover/btn:scale-110" viewBox="0 0 24 24">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                  </svg>
-                  <span className="text-white/60 group-hover/btn:text-white transition-colors">Sign in with Google Engine</span>
-                </Button>
-              </div>
+              <Button 
+                variant="outline" 
+                className="w-full border-white/10 rounded-2xl h-14 bg-white/[0.02] hover:bg-white/5 text-white/60 flex items-center justify-center gap-3 font-semibold text-sm" 
+                onClick={loginWithGoogle} 
+                disabled={isAuthenticating}
+              >
+                <svg className="h-5 w-5" viewBox="0 0 24 24">
+                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
+                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
+                </svg>
+                Google Engine
+              </Button>
 
-              <div className="text-center pt-4">
+              <div className="text-center">
                 <button 
                   onClick={() => setIsSignUp(!isSignUp)}
-                  className="text-[10px] uppercase font-bold tracking-[0.2em] text-white/30 hover:text-blue-400 transition-all flex items-center justify-center gap-2 mx-auto group/toggle"
+                  className="text-[10px] uppercase font-bold tracking-[0.2em] text-white/30 hover:text-blue-400 transition-all"
                 >
-                  <Sparkles className="h-3 w-3 group-hover/toggle:animate-pulse" />
-                  {isSignUp ? 'Already Authorized? Access Command' : 'New Operator? Initialize Deployment'}
+                  {isSignUp ? 'Connection exists? Login' : 'New Node? Create Deployment'}
                 </button>
               </div>
             </CardContent>
           </Card>
         </motion.div>
-        
-        <motion.p 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.8 }}
-          className="text-center mt-10 text-[9px] text-white/10 uppercase tracking-[0.5em] font-medium"
-        >
-          Secure Node Connection Protocol v4.2.0 // CODEATHON AI SYSTEM
-        </motion.p>
       </div>
-
-      <style jsx global>{`
-        @keyframes shimmer {
-          100% { transform: translateX(100%); }
-        }
-      `}</style>
     </div>
   );
 }
