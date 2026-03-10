@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,7 +44,16 @@ export default function TechnicianUpdatesPage() {
 
   const selectedMachine = machines.find(m => m.id === selectedMachineId);
 
-  // Anomaly Calculation logic
+  // Sync form with selected machine data
+  useEffect(() => {
+    if (selectedMachine) {
+      setHealth([selectedMachine.healthScore || 90]);
+      setTemp(selectedMachine.temperature?.toString() || '');
+      setVibration(selectedMachine.vibration?.toString() || '');
+      setHours(selectedMachine.usageHours?.toString() || '');
+    }
+  }, [selectedMachineId, selectedMachine]);
+
   const anomalousMachines = useMemo(() => {
     return machines.filter(m => 
       (m.healthScore || 100) < 85 || 
@@ -52,75 +62,65 @@ export default function TechnicianUpdatesPage() {
     );
   }, [machines]);
 
-  const handleUpdate = async (e: React.FormEvent) => {
+  const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
     if (!db || !selectedMachineId || !user || !profile) {
       toast({
         variant: "destructive",
         title: "Configuration Error",
-        description: "Missing database context or machine selection. Ensure you are logged in."
+        description: "Missing identity or equipment selection."
       });
       return;
     }
 
     setIsUpdating(true);
     
-    try {
-      const machineRef = doc(db, 'machines', selectedMachineId);
-      
-      const parsedHealth = health[0];
-      const parsedTemp = temp ? parseFloat(temp) : (selectedMachine?.temperature || 25);
-      const parsedVibe = vibration ? parseFloat(vibration) : (selectedMachine?.vibration || 0);
-      const parsedHours = hours ? parseFloat(hours) : (selectedMachine?.usageHours || 0);
+    const machineRef = doc(db, 'machines', selectedMachineId);
+    
+    const parsedHealth = health[0];
+    const parsedTemp = temp ? parseFloat(temp) : (selectedMachine?.temperature || 25);
+    const parsedVibe = vibration ? parseFloat(vibration) : (selectedMachine?.vibration || 0);
+    const parsedHours = hours ? parseFloat(hours) : (selectedMachine?.usageHours || 0);
 
-      const updateData = {
-        healthScore: parsedHealth,
-        temperature: parsedTemp,
-        vibration: parsedVibe,
-        usageHours: parsedHours,
-        lastMaintenance: new Date().toISOString().split('T')[0],
-        status: parsedHealth < 50 ? 'Under Maintenance' : (selectedMachine?.status || 'Available'),
-        updatedAt: serverTimestamp()
-      };
+    const updateData = {
+      healthScore: parsedHealth,
+      temperature: parsedTemp,
+      vibration: parsedVibe,
+      usageHours: parsedHours,
+      lastMaintenance: new Date().toISOString().split('T')[0],
+      status: parsedHealth < 50 ? 'Under Maintenance' : (selectedMachine?.status || 'Available'),
+      updatedAt: serverTimestamp()
+    };
 
-      // Mutation: Update Machine Telemetry
-      setDoc(machineRef, updateData, { merge: true })
-        .catch((err: any) => {
-          console.error("Database Error:", err);
+    // Parallel mutations: Machine Telemetry + Audit Log
+    setDoc(machineRef, updateData, { merge: true })
+      .then(() => {
+        // Success feedback
+        toast({ 
+          title: "Node Synchronized", 
+          description: `Telemetry for ${selectedMachine?.name || selectedMachineId} stored successfully.`,
+          className: "bg-green-600 text-white font-bold border-green-700",
         });
+      })
+      .catch((err) => {
+        toast({
+          variant: "destructive",
+          title: "Uplink Failed",
+          description: "Database connection interrupted."
+        });
+      })
+      .finally(() => setIsUpdating(false));
 
-      // Mutation: Create Audit Log
-      addDoc(collection(db, 'usageLogs'), {
-        machineId: selectedMachineId,
-        machineName: selectedMachine?.name || selectedMachineId,
-        userId: user.uid,
-        userName: profile.name || user.email || 'Technician',
-        startTime: new Date().toISOString(),
-        type: 'Telemetry Sync',
-        status: 'Success',
-        createdAt: serverTimestamp()
-      }).catch((err) => console.error("Log archival failed:", err));
-
-      // Success Feedback
-      toast({ 
-        title: "Synchronization Successful", 
-        description: `Telemetry data for ${selectedMachine?.name || selectedMachineId} has been stored in the central fleet.`,
-        className: "bg-green-600 text-white font-bold border-green-700 shadow-lg",
-      });
-      
-      // Reset Input Fields
-      setTemp('');
-      setVibration('');
-      setHours('');
-    } catch (err: any) {
-      toast({
-        variant: "destructive",
-        title: "Input Validation Failed",
-        description: "Please verify all telemetry values are valid numbers."
-      });
-    } finally {
-      setIsUpdating(false);
-    }
+    addDoc(collection(db, 'usageLogs'), {
+      machineId: selectedMachineId,
+      machineName: selectedMachine?.name || selectedMachineId,
+      userId: user.uid,
+      userName: profile.name || user.email || 'Technician',
+      startTime: new Date().toISOString(),
+      type: 'Telemetry Update',
+      status: 'Success',
+      createdAt: serverTimestamp()
+    });
   };
 
   return (
@@ -206,6 +206,7 @@ export default function TechnicianUpdatesPage() {
                         max={100}
                         step={1}
                         className="py-4"
+                        disabled={!selectedMachineId}
                       />
                     </div>
                   </div>
@@ -217,10 +218,11 @@ export default function TechnicianUpdatesPage() {
                         <Thermometer className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                         <Input 
                           type="number" 
-                          placeholder={selectedMachine?.temperature?.toString() || "32"} 
+                          placeholder="32" 
                           className="pl-12 bg-white/5 border-white/10 rounded-2xl h-14 focus:border-primary/40 shadow-inner"
                           value={temp}
                           onChange={(e) => setTemp(e.target.value)}
+                          disabled={!selectedMachineId}
                         />
                       </div>
                     </div>
@@ -232,10 +234,11 @@ export default function TechnicianUpdatesPage() {
                         <Input 
                           type="number" 
                           step="0.001"
-                          placeholder={selectedMachine?.vibration?.toString() || "0.02"} 
+                          placeholder="0.02" 
                           className="pl-12 bg-white/5 border-white/10 rounded-2xl h-14 focus:border-primary/40 shadow-inner"
                           value={vibration}
                           onChange={(e) => setVibration(e.target.value)}
+                          disabled={!selectedMachineId}
                         />
                       </div>
                     </div>
@@ -246,10 +249,11 @@ export default function TechnicianUpdatesPage() {
                         <Zap className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                         <Input 
                           type="number" 
-                          placeholder={selectedMachine?.usageHours?.toString() || "1200"} 
+                          placeholder="1200" 
                           className="pl-12 bg-white/5 border-white/10 rounded-2xl h-14 focus:border-primary/40 shadow-inner"
                           value={hours}
                           onChange={(e) => setHours(e.target.value)}
+                          disabled={!selectedMachineId}
                         />
                       </div>
                     </div>
@@ -274,26 +278,26 @@ export default function TechnicianUpdatesPage() {
         <div className="space-y-6">
            <Card className="border-white/5 bg-white/[0.02] rounded-3xl border shadow-xl">
               <CardHeader className="p-6">
-                <CardTitle className="text-sm font-headline font-bold uppercase tracking-widest text-muted-foreground">Recent Reports</CardTitle>
+                <CardTitle className="text-sm font-headline font-bold uppercase tracking-widest text-muted-foreground">Recent Node Synchronizations</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-6">
-                 {recentLogs.length > 0 ? (
+                 {recentLogs && recentLogs.length > 0 ? (
                    recentLogs.map((log) => (
                     <div key={log.id} className="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between group cursor-default hover:bg-white/[0.08] transition-all">
                         <div className="flex items-center gap-3">
                           <div className="p-2 rounded-xl bg-green-500/10"><CheckCircle2 className="h-4 w-4 text-green-500" /></div>
                           <div>
-                            <p className="text-xs font-bold text-white">Calibration Log</p>
-                            <p className="text-[10px] text-muted-foreground font-mono">{log.machineId} • Successful</p>
+                            <p className="text-xs font-bold text-white">{log.type || 'Telemetry Sync'}</p>
+                            <p className="text-[10px] text-muted-foreground font-mono">{log.machineId} • {log.userName}</p>
                           </div>
                         </div>
-                        <History className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary transition-colors" />
+                        <span className="text-[9px] font-mono opacity-30">{log.createdAt ? new Date(log.createdAt.seconds * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}</span>
                     </div>
                    ))
                  ) : (
                    <div className="text-center py-8 opacity-20 flex flex-col items-center gap-2">
                      <History className="h-8 w-8" />
-                     <p className="text-[10px] font-bold uppercase tracking-widest">No reports synced</p>
+                     <p className="text-[10px] font-bold uppercase tracking-widest">No reports archived</p>
                    </div>
                  )}
               </CardContent>
@@ -310,7 +314,7 @@ export default function TechnicianUpdatesPage() {
                  <div>
                     <h3 className="text-sm font-headline font-bold uppercase tracking-widest text-accent">Maintenance Radar</h3>
                     <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
-                      Systems monitoring vibration and thermal variances across 4 critical nodes.
+                      Monitoring {anomalousMachines.length} nodes for thermal and vibration variance.
                     </p>
                  </div>
                  <Button 
