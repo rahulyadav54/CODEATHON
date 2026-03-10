@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -9,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useFirestore, useCollection, useUser, useDoc } from '@/firebase';
-import { collection, doc, updateDoc, serverTimestamp, addDoc, setDoc, query, orderBy, limit } from 'firebase/firestore';
+import { collection, doc, serverTimestamp, addDoc, setDoc, query, orderBy, limit } from 'firebase/firestore';
 import { Activity, Thermometer, Zap, Wrench, Loader2, Save, History, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Slider } from '@/components/ui/slider';
@@ -48,7 +47,7 @@ export default function TechnicianUpdatesPage() {
       toast({
         variant: "destructive",
         title: "Configuration Error",
-        description: "Missing database context or machine selection."
+        description: "Missing database context or machine selection. Ensure you are logged in."
       });
       return;
     }
@@ -57,27 +56,33 @@ export default function TechnicianUpdatesPage() {
     
     try {
       const machineRef = doc(db, 'machines', selectedMachineId);
+      
+      const parsedHealth = health[0];
+      const parsedTemp = temp ? parseFloat(temp) : (selectedMachine?.temperature || 25);
+      const parsedVibe = vibration ? parseFloat(vibration) : (selectedMachine?.vibration || 0);
+      const parsedHours = hours ? parseFloat(hours) : (selectedMachine?.usageHours || 0);
+
       const updateData = {
-        healthScore: health[0],
-        temperature: temp ? Number(temp) : (selectedMachine?.temperature || 25),
-        vibration: vibration ? Number(vibration) : (selectedMachine?.vibration || 0),
-        usageHours: hours ? Number(hours) : (selectedMachine?.usageHours || 0),
+        healthScore: parsedHealth,
+        temperature: parsedTemp,
+        vibration: parsedVibe,
+        usageHours: parsedHours,
         lastMaintenance: new Date().toISOString().split('T')[0],
-        status: health[0] < 50 ? 'Under Maintenance' : (selectedMachine?.status || 'Available'),
+        status: parsedHealth < 50 ? 'Under Maintenance' : (selectedMachine?.status || 'Available'),
         updatedAt: serverTimestamp()
       };
 
-      // Mutation: Update Machine Telemetry (Optimistic)
+      // Mutation: Update Machine Telemetry
       setDoc(machineRef, updateData, { merge: true })
         .catch((err: any) => {
           toast({
             variant: "destructive",
-            title: "Sync Failed",
+            title: "Database Error",
             description: err.message || "Permissions denied by security layer."
           });
         });
 
-      // Mutation: Create Audit Log (Optimistic)
+      // Mutation: Create Audit Log
       addDoc(collection(db, 'usageLogs'), {
         machineId: selectedMachineId,
         machineName: selectedMachine?.name || selectedMachineId,
@@ -85,25 +90,25 @@ export default function TechnicianUpdatesPage() {
         userName: profile.name || user.email || 'Technician',
         startTime: new Date().toISOString(),
         type: 'Telemetry Sync',
-        status: 'Calibrated',
+        status: 'Success',
         createdAt: serverTimestamp()
-      }).catch((err) => console.error("Log error:", err));
+      }).catch((err) => console.error("Log archival failed:", err));
 
-      // Immediate Success Feedback
+      // Success Feedback
       toast({ 
-        title: "Uplink Established", 
-        description: `Telemetry for ${selectedMachine?.name || selectedMachineId} successfully queued for synchronization.`,
-        className: "bg-green-500/10 border-green-500/20 text-green-500 font-bold"
+        title: "Synchronization Successful", 
+        description: `Telemetry data for ${selectedMachine?.name || selectedMachineId} has been stored in the central fleet.`,
+        className: "bg-green-600 text-white font-bold border-green-700 shadow-lg",
       });
       
-      // Reset fields
+      // Reset Input Fields
       setTemp('');
       setVibration('');
       setHours('');
     } catch (err: any) {
       toast({
         variant: "destructive",
-        title: "Input Error",
+        title: "Input Validation Failed",
         description: "Please verify all telemetry values are valid numbers."
       });
     } finally {
