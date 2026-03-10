@@ -9,9 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { useFirestore, useCollection, useUser, useDoc } from '@/firebase';
 import { collection, doc, serverTimestamp, addDoc, setDoc, query, orderBy, limit } from 'firebase/firestore';
-import { Activity, Thermometer, Zap, Wrench, Loader2, Save, History, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Activity, Thermometer, Zap, Wrench, Loader2, Save, History, CheckCircle2, AlertCircle, Sparkles, Map, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Slider } from '@/components/ui/slider';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 
@@ -38,8 +39,18 @@ export default function TechnicianUpdatesPage() {
   const [vibration, setVibration] = useState('');
   const [hours, setHours] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isAnomalyMapOpen, setIsAnomalyMapOpen] = useState(false);
 
   const selectedMachine = machines.find(m => m.id === selectedMachineId);
+
+  // Anomaly Calculation logic
+  const anomalousMachines = useMemo(() => {
+    return machines.filter(m => 
+      (m.healthScore || 100) < 85 || 
+      (m.temperature || 0) > 40 || 
+      (m.vibration || 0) > 0.05
+    );
+  }, [machines]);
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,11 +86,7 @@ export default function TechnicianUpdatesPage() {
       // Mutation: Update Machine Telemetry
       setDoc(machineRef, updateData, { merge: true })
         .catch((err: any) => {
-          toast({
-            variant: "destructive",
-            title: "Database Error",
-            description: err.message || "Permissions denied by security layer."
-          });
+          console.error("Database Error:", err);
         });
 
       // Mutation: Create Audit Log
@@ -306,11 +313,92 @@ export default function TechnicianUpdatesPage() {
                       Systems monitoring vibration and thermal variances across 4 critical nodes.
                     </p>
                  </div>
-                 <Button variant="outline" className="w-full border-accent/30 text-accent hover:bg-accent/10 h-11 rounded-xl text-xs font-bold uppercase tracking-widest">View Anomaly Map</Button>
+                 <Button 
+                  variant="outline" 
+                  className="w-full border-accent/30 text-accent hover:bg-accent/10 h-11 rounded-xl text-xs font-bold uppercase tracking-widest"
+                  onClick={() => setIsAnomalyMapOpen(true)}
+                >
+                  View Anomaly Map
+                </Button>
               </CardContent>
            </Card>
         </div>
       </div>
+
+      {/* Maintenance Radar Anomaly Map Dialog */}
+      <Dialog open={isAnomalyMapOpen} onOpenChange={setIsAnomalyMapOpen}>
+        <DialogContent className="bg-[#1a1c24] border-white/10 max-w-4xl rounded-[2.5rem] p-0 overflow-hidden shadow-2xl">
+          <div className="h-1.5 w-full bg-accent" />
+          <div className="p-10 space-y-8">
+            <DialogHeader>
+              <div className="flex items-center gap-4 mb-2">
+                 <div className="p-3 rounded-2xl bg-accent/10 border border-accent/20"><Sparkles className="h-6 w-6 text-accent" /></div>
+                 <div>
+                    <DialogTitle className="text-3xl font-headline font-bold">Anomaly Map</DialogTitle>
+                    <DialogDescription className="text-sm mt-1 uppercase tracking-widest font-bold text-accent/60">Live Field Diagnostics</DialogDescription>
+                 </div>
+              </div>
+            </DialogHeader>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+               <div className="space-y-6">
+                  <h4 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4 text-accent" /> Critical Nodes
+                  </h4>
+                  <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                    {anomalousMachines.length > 0 ? (
+                      anomalousMachines.map((m) => (
+                        <div key={m.id} className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:border-accent/40 transition-all group">
+                           <div className="flex items-center justify-between mb-3">
+                              <span className="text-[10px] font-bold text-accent font-mono bg-accent/10 px-2 py-0.5 rounded uppercase">ID: {m.id}</span>
+                              <Badge className="bg-red-500/20 text-red-500 border-0 text-[9px] font-bold uppercase tracking-tighter">
+                                {m.healthScore < 80 ? 'CRITICAL' : 'ELEVATED'}
+                              </Badge>
+                           </div>
+                           <h5 className="text-sm font-bold text-white mb-4">{m.name}</h5>
+                           <div className="grid grid-cols-2 gap-4">
+                              <div className="space-y-1">
+                                 <p className="text-[9px] uppercase font-bold text-muted-foreground">Thermal</p>
+                                 <p className={cn("text-lg font-bold", m.temperature > 45 ? "text-red-500" : "text-white")}>{m.temperature}°C</p>
+                              </div>
+                              <div className="space-y-1">
+                                 <p className="text-[9px] uppercase font-bold text-muted-foreground">Vibration</p>
+                                 <p className={cn("text-lg font-bold", m.vibration > 0.05 ? "text-red-500" : "text-white")}>{m.vibration}mm</p>
+                              </div>
+                           </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="py-20 text-center space-y-4 opacity-30">
+                         <CheckCircle2 className="h-12 w-12 mx-auto text-green-500" />
+                         <p className="text-sm font-bold uppercase tracking-widest">No Anomalies Detected</p>
+                      </div>
+                    )}
+                  </div>
+               </div>
+
+               <div className="bg-white/[0.02] border border-white/5 rounded-[2rem] p-8 flex flex-col items-center justify-center text-center space-y-6 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-accent/5 animate-pulse pointer-events-none" />
+                  <div className="relative z-10">
+                    <div className="h-32 w-32 rounded-full border-4 border-accent/20 flex items-center justify-center relative">
+                       <div className="absolute inset-0 rounded-full border-t-4 border-accent animate-spin" />
+                       <Map className="h-12 w-12 text-accent" />
+                    </div>
+                  </div>
+                  <div className="relative z-10 space-y-2">
+                     <p className="text-2xl font-headline font-bold">{anomalousMachines.length} Anomaly Hubs</p>
+                     <p className="text-xs text-muted-foreground max-w-[240px] leading-relaxed">
+                        Currently monitoring {machines.length} nodes. {anomalousMachines.length} machines are showing variance from standard operational benchmarks.
+                     </p>
+                  </div>
+                  <Button className="w-full bg-accent text-white hover:bg-accent/80 rounded-2xl h-14 font-bold shadow-xl shadow-accent/20" onClick={() => setIsAnomalyMapOpen(false)}>
+                    Acknowledge Radar State
+                  </Button>
+               </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
