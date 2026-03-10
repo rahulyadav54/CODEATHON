@@ -35,10 +35,10 @@ export default function DashboardLayout({
     if (!profileLoading && profile && user) {
       const role = profile.role;
       
-      // Admin only routes - exceptions for approvals which are shared with teachers
+      // Admin only routes
       if (pathname.includes('/admin') && role !== 'Admin') {
+        // Exception: Allow Technician (Teacher) to access Approvals page specifically
         if (pathname === '/dashboard/admin/approvals' && role === 'Technician') {
-          // Allow Technician to access Approvals
           return;
         }
         router.push('/dashboard');
@@ -49,11 +49,8 @@ export default function DashboardLayout({
         router.push('/dashboard');
       }
 
-      // Student/Trainee only routes
-      if (pathname.includes('/bookings') && (role !== 'Trainee' && role !== 'Admin')) {
-         // Allow Admin to see but maybe not standard teacher
-         // router.push('/dashboard');
-      }
+      // Student/Trainee only routes (e.g. specific student tools if added)
+      // Note: General dashboard pages are shared
     }
   }, [profile, profileLoading, pathname, router, user]);
 

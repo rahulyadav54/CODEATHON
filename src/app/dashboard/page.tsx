@@ -24,7 +24,7 @@ import { collection, query, where, doc } from 'firebase/firestore';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import Link from 'next/link';
+import Link from 'link';
 
 const utilizationData = [
   { name: 'Mon', usage: 65 },
@@ -84,7 +84,7 @@ export default function DashboardOverview() {
            )}
            {role === 'Technician' && (
              <Link href="/dashboard/technician/updates" className="flex-1 md:flex-none">
-               <Button className="w-full md:w-auto rounded-xl h-10 border-white/10 bg-white/5 text-xs px-6 font-bold rounded-xl h-10">
+               <Button className="w-full md:w-auto rounded-xl h-10 border-white/10 bg-white/5 text-xs px-6 font-bold rounded-xl">
                  Log Health Update
                </Button>
              </Link>
@@ -264,7 +264,7 @@ export default function DashboardOverview() {
                 </div>
               </CardHeader>
               <CardContent className="px-8 pb-8 space-y-6">
-                 <div className="p-6 rounded-2xl bg-accent/5 border border-accent/10">
+                 <div className="p-6 rounded-2xl bg-accent/5 border border-accent/10 text-center">
                     <p className="text-[10px] text-accent uppercase font-bold tracking-widest mb-2">Pending Maintenance</p>
                     <p className="text-3xl font-bold">4 Nodes</p>
                  </div>
