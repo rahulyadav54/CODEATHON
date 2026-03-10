@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect, useMemo } from 'react';
@@ -13,7 +12,7 @@ import {
   ResponsiveContainer, 
   Cell,
 } from 'recharts';
-import { Cpu, Zap, AlertTriangle, CheckCircle2, TrendingUp, Activity, ClipboardList, Clock, ShieldAlert } from 'lucide-react';
+import { Cpu, Zap, CheckCircle2, Activity, ClipboardList, ShieldAlert } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { useFirestore, useCollection, useUser, useDoc } from '@/firebase';
 import { collection, query, where, orderBy, limit, doc } from 'firebase/firestore';
@@ -33,9 +32,14 @@ const utilizationData = [
 ];
 
 export default function DashboardOverview() {
+  const [mounted, setMounted] = useState(false);
   const db = useFirestore();
   const { user } = useUser();
   
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const userRef = useMemo(() => user && db ? doc(db, 'users', user.uid) : null, [db, user]);
   const { data: profile } = useDoc(userRef);
 
@@ -54,23 +58,10 @@ export default function DashboardOverview() {
   );
   const { data: healthAlerts } = useCollection(maintenanceAlertsQuery);
 
-  const recentLogsQuery = useMemo(() => 
-    db ? query(collection(db, 'usageLogs'), orderBy('createdAt', 'desc'), limit(5)) : null,
-    [db]
-  );
-  const { data: recentLogs } = useCollection(recentLogsQuery);
-
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   if (!mounted) return null;
 
   const totalMachines = machines.length;
   const inUse = machines.filter(m => m.status === 'In Use').length;
-  const inMaintenance = machines.filter(m => m.status === 'Under Maintenance').length;
 
   return (
     <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500 pb-10">
@@ -91,7 +82,6 @@ export default function DashboardOverview() {
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         <Card className="border-white/5 bg-white/[0.03] rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2 p-6">
@@ -100,7 +90,7 @@ export default function DashboardOverview() {
           </CardHeader>
           <CardContent className="p-6 pt-0">
             <div className="text-2xl font-bold">{totalMachines}</div>
-            <p className="text-xs text-muted-foreground mt-1">Operational across 3 centers</p>
+            <p className="text-xs text-muted-foreground mt-1 text-[10px]">Operational Fleet Index</p>
           </CardContent>
         </Card>
         <Card className="border-white/5 bg-white/[0.03] rounded-2xl">
@@ -117,22 +107,22 @@ export default function DashboardOverview() {
         </Card>
         <Card className="border-white/5 bg-white/[0.03] rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2 p-6">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Maintenance Alerts</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">System Alerts</CardTitle>
             <ShieldAlert className="h-4 w-4 text-destructive" />
           </CardHeader>
           <CardContent className="p-6 pt-0">
             <div className="text-2xl font-bold">{healthAlerts.length}</div>
-            <p className="text-xs text-destructive mt-1 font-bold">Urgent attention required</p>
+            <p className="text-xs text-destructive mt-1 font-bold text-[10px]">Critical Nodes Detected</p>
           </CardContent>
         </Card>
         <Card className="border-white/5 bg-white/[0.03] rounded-2xl">
           <CardHeader className="flex flex-row items-center justify-between pb-2 p-6">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">System Health</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">Global Health</CardTitle>
             <CheckCircle2 className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent className="p-6 pt-0">
             <div className="text-2xl font-bold">94%</div>
-            <p className="text-xs text-muted-foreground mt-1">Global system uptime</p>
+            <p className="text-xs text-muted-foreground mt-1 text-[10px]">Optimal system uptime</p>
           </CardContent>
         </Card>
       </div>
@@ -183,14 +173,12 @@ export default function DashboardOverview() {
                     <span className="text-xs font-bold font-mono tracking-tighter">{m.id}</span>
                     <span className="text-[10px] text-muted-foreground uppercase tracking-widest">{m.name}</span>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Badge variant="outline" className={cn(
-                      "rounded-lg px-2 py-0 border-0 text-[10px] font-bold",
-                      m.healthScore > 85 ? "bg-green-500/10 text-green-500" : "bg-yellow-500/10 text-yellow-500"
-                    )}>
-                      {m.healthScore}%
-                    </Badge>
-                  </div>
+                  <Badge variant="outline" className={cn(
+                    "rounded-lg px-2 py-0 border-0 text-[10px] font-bold",
+                    m.healthScore > 85 ? "bg-green-500/10 text-green-500" : "bg-yellow-500/10 text-yellow-500"
+                  )}>
+                    {m.healthScore}%
+                  </Badge>
                 </div>
               ))}
               <Button variant="ghost" className="w-full text-xs text-muted-foreground hover:text-white" asChild>

@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { 
   Cpu, Send, Sparkles, BookOpen, Wrench, Mic, MicOff, 
   Trash2, Activity, Loader2, BrainCircuit, Search, 
-  Terminal, AlertTriangle, Info, FileText
+  AlertTriangle, ShieldCheck
 } from 'lucide-react';
 import { aiZayaOperationalSupport } from '@/ai/flows/ai-zaya-operational-support-flow';
 import { useFirestore, useUser, useDoc, useCollection } from '@/firebase';
@@ -126,14 +127,14 @@ export default function AiZayaPage() {
   };
 
   const quickActions = [
-    { label: "Check Availability", icon: Activity, query: "Which machines are available now?" },
-    { label: "Troubleshoot Issue", icon: Wrench, query: "I need help with a machine error." },
-    { label: "Explain Manual", icon: BookOpen, query: "Explain the training manual for CNC operation." },
-    { label: "Status Update", icon: Cpu, query: "Show the current status of the fleet." }
+    { label: "Check Availability", icon: Search, query: "Which machines are available now?" },
+    { label: "Troubleshooting", icon: Wrench, query: "I need help with a machine error." },
+    { label: "Safety Protocols", icon: ShieldCheck, query: "What are the safety rules for CNC?" },
+    { label: "Fleet Health", icon: Activity, query: "Summarize the health of the current fleet." }
   ];
 
   return (
-    <div className="flex flex-col h-[calc(100vh-160px)] w-full max-w-6xl mx-auto bg-[#1a1c24] border border-white/5 rounded-3xl overflow-hidden shadow-2xl relative">
+    <div className="flex flex-col h-[calc(100vh-140px)] w-full max-w-6xl mx-auto bg-[#1a1c24] border border-white/5 rounded-3xl overflow-hidden shadow-2xl relative">
       
       {/* 1. Header Area */}
       <div className="flex h-20 items-center justify-between px-8 border-b border-white/5 bg-[#1a1c24] z-30 shrink-0">
@@ -142,8 +143,14 @@ export default function AiZayaPage() {
             <Cpu className="h-5 w-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-headline font-bold text-white leading-tight">AI Zaya</h2>
-            <p className="text-xs text-muted-foreground/60 font-medium">Operational Specialist</p>
+            <div className="flex items-center gap-2">
+              <h2 className="text-lg font-headline font-bold text-white leading-tight">AI Zaya</h2>
+              <Badge variant="outline" className="text-[9px] h-4 px-1.5 border-primary/30 text-primary uppercase font-bold">Operational Core</Badge>
+            </div>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]" />
+              <p className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-widest">Active Specialist</p>
+            </div>
           </div>
         </div>
         <Button 
@@ -157,8 +164,8 @@ export default function AiZayaPage() {
       </div>
 
       {/* 2. Scrollable Messages Container */}
-      <ScrollArea className="flex-1 w-full overflow-x-hidden bg-[#1a1c24]" ref={scrollRef}>
-        <div className="max-w-4xl mx-auto px-6 py-8 md:py-12">
+      <ScrollArea className="flex-1 w-full bg-[#1a1c24]" ref={scrollRef}>
+        <div className="max-w-4xl mx-auto px-6 py-8 md:py-12 overflow-x-hidden">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 text-center">
               <div className="mb-8">
@@ -217,7 +224,7 @@ export default function AiZayaPage() {
                     </Avatar>
                     
                     <div className={cn(
-                      "flex flex-col gap-2 max-w-[85%]",
+                      "flex flex-col gap-2 max-w-[85%] overflow-hidden",
                       m.role === 'user' ? 'items-end' : 'items-start'
                     )}>
                       {m.isError ? (
@@ -284,7 +291,7 @@ export default function AiZayaPage() {
           <div className="relative flex items-center bg-[#232530] border border-white/10 rounded-2xl px-5 h-16 group transition-all focus-within:border-primary/40 focus-within:shadow-[0_0_20px_rgba(var(--primary),0.05)]">
             <Input 
               className="bg-transparent border-0 h-full focus-visible:ring-0 placeholder:text-muted-foreground/20 text-sm md:text-base shadow-none px-0" 
-              placeholder="Ask AI Zaya about machines, troubleshooting, or training..." 
+              placeholder="Ask AI Zaya about machine diagnostics, maintenance, or training..." 
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
