@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { CheckCircle2, XCircle, User as UserIcon, Calendar, Clock, GraduationCap, Loader2, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, XCircle, User as UserIcon, Calendar, Clock, GraduationCap, Loader2, ShieldCheck, Ticket } from 'lucide-react';
 import { useFirestore, useCollection } from '@/firebase';
 import { collection, query, where, updateDoc, doc, serverTimestamp, addDoc } from 'firebase/firestore';
 import { cn } from '@/lib/utils';
