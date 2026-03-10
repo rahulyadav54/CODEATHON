@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { 
   Cpu, Send, Sparkles, BookOpen, Wrench, Mic, MicOff, 
   Trash2, Activity, Loader2, BrainCircuit, GraduationCap, Copy, RefreshCw,
-  Search, Info, FileText, CheckCircle2, Terminal
+  Search, Info, FileText, CheckCircle2, Terminal, ShieldCheck
 } from 'lucide-react';
 import { aiZayaOperationalSupport } from '@/ai/flows/ai-zaya-operational-support-flow';
 import { useFirestore, useUser, useDoc, useCollection } from '@/firebase';
@@ -95,7 +95,7 @@ export default function AiZayaPage() {
           totalHours: profile.totalHours || 0,
           bookingHistory: []
         },
-        machineFleet: machines.map(m => ({
+        machineFleet: (machines || []).map(m => ({
           id: m.id,
           name: m.name,
           type: m.type,
@@ -169,7 +169,7 @@ export default function AiZayaPage() {
                   Welcome back, {profile?.name?.split(' ')[0] || 'Operator'}.
                 </h1>
                 <p className="text-sm md:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed font-medium">
-                  I am Zaya, your centralized intelligence layer. I have full visibility of the {machines.length} nodes in your fleet. How shall we proceed?
+                  I am Zaya, your centralized intelligence layer. I have full visibility of the {machines?.length || 0} nodes in your fleet. How shall we proceed?
                 </p>
               </div>
 
