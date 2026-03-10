@@ -75,7 +75,7 @@ export default function DashboardOverview() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-           {role === 'Admin' && (
+           {(role === 'Admin' || role === 'Technician') && (
              <Link href="/dashboard/admin/approvals" className="flex-1 md:flex-none">
                <Button className="w-full md:w-auto rounded-xl h-10 tech-gradient border-0 text-xs px-6 font-bold shadow-lg shadow-primary/20">
                  Review Approvals ({pendingBookings.length})
@@ -84,7 +84,7 @@ export default function DashboardOverview() {
            )}
            {role === 'Technician' && (
              <Link href="/dashboard/technician/updates" className="flex-1 md:flex-none">
-               <Button className="w-full md:w-auto rounded-xl h-10 tech-gradient border-0 text-xs px-6 font-bold shadow-lg shadow-primary/20">
+               <Button className="w-full md:w-auto rounded-xl h-10 border-white/10 bg-white/5 text-xs px-6 font-bold rounded-xl h-10">
                  Log Health Update
                </Button>
              </Link>

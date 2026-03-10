@@ -35,8 +35,12 @@ export default function DashboardLayout({
     if (!profileLoading && profile && user) {
       const role = profile.role;
       
-      // Admin only routes
+      // Admin only routes - exceptions for approvals which are shared with teachers
       if (pathname.includes('/admin') && role !== 'Admin') {
+        if (pathname === '/dashboard/admin/approvals' && role === 'Technician') {
+          // Allow Technician to access Approvals
+          return;
+        }
         router.push('/dashboard');
       }
       
