@@ -9,7 +9,7 @@
         "id": { "type": "string" },
         "name": { "type": "string" },
         "email": { "type": "string", "format": "email" },
-        "role": { "type": "string", "enum": ["Admin", "Teacher", "Student"] },
+        "role": { "type": "string", "enum": ["Admin", "Technician", "Trainee"] },
         "skillLevel": { "type": "string", "enum": ["Beginner", "Intermediate", "Expert"] },
         "totalHours": { "type": "number" }
       },
@@ -47,6 +47,20 @@
         "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected"] },
         "createdAt": { "type": "object" }
       }
+    },
+    "UsageLog": {
+      "title": "Usage Log",
+      "description": "Historical record of machine usage sessions.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "machineId": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "startTime": { "type": "string" },
+        "endTime": { "type": "string" },
+        "duration": { "type": "number" }
+      }
     }
   },
   "auth": {
@@ -64,6 +78,10 @@
     "/bookings/{bookingId}": {
       "schema": "#/entities/Booking",
       "description": "Training reservations."
+    },
+    "/usageLogs/{logId}": {
+      "schema": "#/entities/UsageLog",
+      "description": "Machine usage history logs."
     }
   }
 }

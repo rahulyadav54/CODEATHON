@@ -14,7 +14,11 @@ import {
   LogOut,
   Loader2,
   ChevronRight,
-  User
+  User,
+  Users,
+  ClipboardList,
+  Activity,
+  History
 } from 'lucide-react';
 import {
   Sidebar,
@@ -41,13 +45,16 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 const navItems = [
-  { name: 'Overview', icon: LayoutDashboard, path: '/dashboard', roles: ['Admin', 'Teacher', 'Student'] },
-  { name: 'Machines', icon: Cpu, path: '/dashboard/machines', roles: ['Admin', 'Teacher'] },
-  { name: 'Portal', icon: Calendar, path: '/dashboard/bookings', roles: ['Student'] },
-  { name: 'Approvals', icon: Ticket, path: '/dashboard/trainer/approvals', roles: ['Teacher'] },
+  { name: 'Overview', icon: LayoutDashboard, path: '/dashboard', roles: ['Admin', 'Technician', 'Trainee'] },
+  { name: 'Machines', icon: Cpu, path: '/dashboard/machines', roles: ['Admin', 'Technician'] },
+  { name: 'Portal', icon: Calendar, path: '/dashboard/bookings', roles: ['Trainee'] },
+  { name: 'Booking Approvals', icon: Ticket, path: '/dashboard/admin/approvals', roles: ['Admin'] },
+  { name: 'Technician Updates', icon: Activity, path: '/dashboard/technician/updates', roles: ['Technician', 'Admin'] },
+  { name: 'User Management', icon: Users, path: '/dashboard/admin/users', roles: ['Admin'] },
+  { name: 'Usage Logs', icon: History, path: '/dashboard/usage', roles: ['Admin', 'Trainee'] },
   { name: 'Analytics', icon: BarChart3, path: '/dashboard/analytics', roles: ['Admin'] },
-  { name: 'Maintenance', icon: Ticket, path: '/dashboard/maintenance', roles: ['Admin', 'Teacher'] },
-  { name: 'AI Zaya', icon: MessageSquare, path: '/dashboard/ai-zaya', roles: ['Admin', 'Teacher', 'Student'] },
+  { name: 'Maintenance', icon: ClipboardList, path: '/dashboard/maintenance', roles: ['Admin', 'Technician'] },
+  { name: 'AI Zaya', icon: MessageSquare, path: '/dashboard/ai-zaya', roles: ['Admin', 'Technician', 'Trainee'] },
 ];
 
 export function DashboardSidebar() {
@@ -78,7 +85,7 @@ export function DashboardSidebar() {
     );
   }
 
-  const userRole = profile?.role || 'Student';
+  const userRole = profile?.role || 'Trainee';
   const filteredNav = navItems.filter(item => item.roles.includes(userRole));
 
   return (
@@ -89,7 +96,7 @@ export function DashboardSidebar() {
             <Cpu className="h-5 w-5" />
           </div>
           {state !== 'collapsed' && (
-            <span className="text-lg font-headline font-bold">CODEATHON AI</span>
+            <span className="text-lg font-headline font-bold">SkillMach AI</span>
           )}
         </Link>
       </SidebarHeader>
