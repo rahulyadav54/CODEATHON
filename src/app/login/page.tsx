@@ -61,7 +61,7 @@ export default function LoginPage() {
           id: userCredential.user.uid,
           name: name,
           email: userCredential.user.email,
-          role: role, // Storing Admin, Technician, or Trainee
+          role: role,
           skillLevel: 'Beginner',
           totalHours: 0,
           createdAt: new Date().toISOString()
@@ -72,13 +72,11 @@ export default function LoginPage() {
       } else {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
         
-        // Fetch role from Firestore immediately after login
         const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
         if (userDoc.exists()) {
           const fetchedRole = userDoc.data().role;
           redirectBasedOnRole(fetchedRole || 'Trainee');
         } else {
-          // If no profile exists, default to Trainee and create a shell profile
           await setDoc(doc(db, 'users', userCredential.user.uid), {
             id: userCredential.user.uid,
             email: userCredential.user.email,

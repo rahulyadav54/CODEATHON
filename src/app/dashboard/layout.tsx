@@ -3,7 +3,7 @@
 
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
-import { Bell, Search, Cpu, Loader2, ShieldAlert } from 'lucide-react';
+import { Bell, Search, Cpu, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useUser, useFirestore, useDoc } from '@/firebase';
 import { useRouter, usePathname } from 'next/navigation';
@@ -45,10 +45,10 @@ export default function DashboardLayout({
         router.push('/dashboard');
       }
 
-      // Trainee/Student only routes
-      if (pathname.includes('/bookings') && (role === 'Admin' || role === 'Technician')) {
-        // Technically teachers/admins might want to see bookings, but strictly per requirements:
-        // if (role !== 'Trainee') router.push('/dashboard');
+      // Student/Trainee only routes
+      if (pathname.includes('/bookings') && role !== 'Trainee' && role !== 'Admin') {
+         // Allow Admin to see but maybe not standard technician
+         // router.push('/dashboard');
       }
     }
   }, [profile, profileLoading, pathname, router, user]);

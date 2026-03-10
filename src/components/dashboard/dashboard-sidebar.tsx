@@ -47,7 +47,7 @@ import {
 const navItems = [
   { name: 'Overview', icon: LayoutDashboard, path: '/dashboard', roles: ['Admin', 'Technician', 'Trainee'] },
   { name: 'Machine Fleet', icon: Cpu, path: '/dashboard/machines', roles: ['Admin', 'Technician', 'Trainee'] },
-  { name: 'Machine Booking', icon: Calendar, path: '/dashboard/bookings', roles: ['Trainee'] },
+  { name: 'Machine Booking', icon: Calendar, path: '/dashboard/bookings', roles: ['Trainee', 'Admin'] },
   { name: 'Approvals', icon: Ticket, path: '/dashboard/admin/approvals', roles: ['Admin'] },
   { name: 'System Logs', icon: History, path: '/dashboard/usage', roles: ['Admin', 'Trainee'] },
   { name: 'Health Updates', icon: Activity, path: '/dashboard/technician/updates', roles: ['Technician', 'Admin'] },
@@ -88,7 +88,6 @@ export function DashboardSidebar() {
   const userRole = profile?.role || 'Trainee';
   const filteredNav = navItems.filter(item => item.roles.includes(userRole));
 
-  // Role display label
   const roleLabel = 
     userRole === 'Admin' ? 'Admin' :
     userRole === 'Technician' ? 'Teacher' : 'Student';
