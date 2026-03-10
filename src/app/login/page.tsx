@@ -61,7 +61,6 @@ export default function LoginPage() {
         await signInWithEmailAndPassword(auth, email, password);
         toast({ title: "Access Granted", description: "Node connection established." });
       }
-      // Redirection handled by useEffect
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -93,7 +92,6 @@ export default function LoginPage() {
           createdAt: new Date().toISOString()
         });
       }
-      // Redirection handled by useEffect
     } catch (error: any) {
       toast({ variant: "destructive", title: "Auth Failed", description: error.message });
       setIsAuthenticating(false);
@@ -277,7 +275,7 @@ export default function LoginPage() {
 
               <div className="relative py-4">
                 <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-white/5"></span></div>
-                <div className="relative flex justify-center text-[9px] uppercase font-bold tracking-[0.3em]"><span className="bg-[#020617]/50 px-4 text-white/20">External Core Auth</span></div>
+                <div className="relative flex justify-center text-[9px] uppercase font-bold tracking-[0.3em]"><span className="bg-[#020617]/50 px-4 text-white/20">External Auth</span></div>
               </div>
 
               <Button 

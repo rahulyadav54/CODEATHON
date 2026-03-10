@@ -4,16 +4,18 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth, onAuthStateChanged, User } from 'firebase/auth';
 import { getFirestore, Firestore, doc, onSnapshot, DocumentData, Query, DocumentReference } from 'firebase/firestore';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
+// Your new web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyC3OkKB2A_lGnwlUci8Bt6wgS_9S15zHFc",
-  authDomain: "codeathon-ai.firebaseapp.com",
-  projectId: "codeathon-ai",
-  storageBucket: "codeathon-ai.firebasestorage.app",
-  messagingSenderId: "891748040035",
-  appId: "1:891748040035:web:4ed0d0494054bda20a6756",
-  measurementId: "G-6GQV6J0ZQW"
+  apiKey: "AIzaSyB5E2bcxYpLFOj7v0tA4ryGKvZspDMQn4I",
+  authDomain: "codeathon-ai-ff8c1.firebaseapp.com",
+  databaseURL: "https://codeathon-ai-ff8c1-default-rtdb.firebaseio.com",
+  projectId: "codeathon-ai-ff8c1",
+  storageBucket: "codeathon-ai-ff8c1.firebasestorage.app",
+  messagingSenderId: "297428971976",
+  appId: "1:297428971976:web:ab31ef239109ddc03d50fd",
+  measurementId: "G-45RBLM0RJX"
 };
 
 function getFirebaseApp(): FirebaseApp {
@@ -25,14 +27,9 @@ const app = getFirebaseApp();
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-export function useAuth(): Auth {
-  return auth;
-}
-
-export function useFirestore(): Firestore {
-  return db;
-}
-
+/**
+ * Custom hook to manage Firebase user state.
+ */
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -48,8 +45,11 @@ export function useUser() {
   return { user, loading };
 }
 
+/**
+ * Custom hook to fetch a single Firestore document in real-time.
+ */
 export function useDoc(docRef: DocumentReference | null) {
-  const [data, setData] = useState<DocumentData | null>(null);
+  const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -78,8 +78,11 @@ export function useDoc(docRef: DocumentReference | null) {
   return { data, loading, error };
 }
 
+/**
+ * Custom hook to fetch a Firestore collection/query in real-time.
+ */
 export function useCollection(query: Query | null) {
-  const [data, setData] = useState<DocumentData[]>([]);
+  const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -107,4 +110,12 @@ export function useCollection(query: Query | null) {
   }, [query]);
 
   return { data, loading, error };
+}
+
+export function useAuth(): Auth {
+  return auth;
+}
+
+export function useFirestore(): Firestore {
+  return db;
 }
