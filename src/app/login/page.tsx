@@ -41,6 +41,7 @@ export default function LoginPage() {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isAuthenticating) return;
     setIsAuthenticating(true);
 
     try {
@@ -60,7 +61,7 @@ export default function LoginPage() {
         await signInWithEmailAndPassword(auth, email, password);
         toast({ title: "Access Granted", description: "Node connection established." });
       }
-      router.push('/dashboard');
+      // Redirection handled by useEffect
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -72,6 +73,7 @@ export default function LoginPage() {
   };
 
   const loginWithGoogle = async () => {
+    if (isAuthenticating) return;
     setIsAuthenticating(true);
     try {
       const provider = new GoogleAuthProvider();
@@ -91,7 +93,7 @@ export default function LoginPage() {
           createdAt: new Date().toISOString()
         });
       }
-      router.push('/dashboard');
+      // Redirection handled by useEffect
     } catch (error: any) {
       toast({ variant: "destructive", title: "Auth Failed", description: error.message });
       setIsAuthenticating(false);

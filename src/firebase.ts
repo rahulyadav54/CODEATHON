@@ -3,8 +3,8 @@
 
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth, onAuthStateChanged, User } from 'firebase/auth';
-import { getFirestore, Firestore, doc, onSnapshot, DocumentData, collection, Query, DocumentReference } from 'firebase/firestore';
-import { useState, useEffect } from 'react';
+import { getFirestore, Firestore, doc, onSnapshot, DocumentData, Query, DocumentReference } from 'firebase/firestore';
+import { useState, useEffect, useMemo } from 'react';
 
 const firebaseConfig = {
   apiKey: "AIzaSyC3OkKB2A_lGnwlUci8Bt6wgS_9S15zHFc",
@@ -38,10 +38,11 @@ export function useUser() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    return onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
       setUser(user);
       setLoading(false);
     });
+    return () => unsubscribe();
   }, []);
 
   return { user, loading };
@@ -54,21 +55,24 @@ export function useDoc(docRef: DocumentReference | null) {
 
   useEffect(() => {
     if (!docRef) {
+      setData(null);
       setLoading(false);
       return;
     }
 
-    return onSnapshot(
+    const unsubscribe = onSnapshot(
       docRef,
       (snapshot) => {
         setData(snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null);
         setLoading(false);
       },
       (err) => {
+        console.error("useDoc error:", err);
         setError(err);
         setLoading(false);
       }
     );
+    return () => unsubscribe();
   }, [docRef]);
 
   return { data, loading, error };
@@ -81,11 +85,12 @@ export function useCollection(query: Query | null) {
 
   useEffect(() => {
     if (!query) {
+      setData([]);
       setLoading(false);
       return;
     }
 
-    return onSnapshot(
+    const unsubscribe = onSnapshot(
       query,
       (snapshot) => {
         const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -93,10 +98,12 @@ export function useCollection(query: Query | null) {
         setLoading(false);
       },
       (err) => {
+        console.error("useCollection error:", err);
         setError(err);
         setLoading(false);
       }
     );
+    return () => unsubscribe();
   }, [query]);
 
   return { data, loading, error };
