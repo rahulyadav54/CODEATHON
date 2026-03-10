@@ -58,7 +58,7 @@ export default function LoginPage() {
           totalHours: 0,
           createdAt: new Date().toISOString()
         });
-        toast({ title: "Account Created", description: `Welcome to CODEATHON AI as a ${role}.` });
+        toast({ title: "Account Created", description: `Welcome to CODEATHON AI as ${role === 'Student' ? 'a Trainee' : role === 'Trainer' ? 'a Shield' : 'an Overlord'}.` });
       } else {
         await signInWithEmailAndPassword(auth, email, password);
         toast({ title: "Access Granted", description: "Successfully authenticated to the command center." });
@@ -70,7 +70,6 @@ export default function LoginPage() {
         title: "Authentication Failed",
         description: error.message || "Please check your credentials."
       });
-    } finally {
       setIsAuthenticating(false);
     }
   };
@@ -82,9 +81,11 @@ export default function LoginPage() {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       
-      const userDoc = await getDoc(doc(db, 'users', result.user.uid));
+      const userDocRef = doc(db, 'users', result.user.uid);
+      const userDoc = await getDoc(userDocRef);
+      
       if (!userDoc.exists()) {
-        await setDoc(doc(db, 'users', result.user.uid), {
+        await setDoc(userDocRef, {
           id: result.user.uid,
           name: result.user.displayName || 'Trainee',
           email: result.user.email,
@@ -97,14 +98,13 @@ export default function LoginPage() {
       router.push('/dashboard');
     } catch (error: any) {
       toast({ variant: "destructive", title: "Google Login Failed", description: error.message });
-    } finally {
       setIsAuthenticating(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex items-center justify-center bg-[#020617]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
@@ -112,7 +112,6 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-[#020617] relative overflow-hidden font-body selection:bg-primary/30">
-      {/* Immersive Animated Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <motion.div 
           animate={{ 
@@ -167,7 +166,6 @@ export default function LoginPage() {
           transition={{ delay: 0.2, duration: 0.5 }}
         >
           <Card className="border-white/10 bg-black/40 backdrop-blur-[40px] rounded-[2.5rem] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.8)] border relative group">
-            {/* Top Glow Accent */}
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-1/2 h-[2px] bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
             
             <CardContent className="p-8 md:p-14 space-y-8">
@@ -218,7 +216,7 @@ export default function LoginPage() {
                                 )}
                               >
                                 <item.icon className={cn("h-6 w-6 transition-all duration-500", role === item.id ? "text-blue-400 scale-110 drop-shadow-[0_0_8px_rgba(96,165,250,0.5)]" : "text-white/30")} />
-                                <span className={cn("text-[10px] font-bold uppercase tracking-widest", role === item.id ? "text-blue-400" : "text-white/30")}>
+                                <span className={cn("text-[10px] font-bold uppercase tracking-widest text-center", role === item.id ? "text-blue-400" : "text-white/30")}>
                                   {item.label}
                                 </span>
                                 {role === item.id && (
@@ -293,7 +291,6 @@ export default function LoginPage() {
                       <ArrowRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
                     </div>
                   )}
-                  {/* Subtle Shimmer Effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] pointer-events-none" />
                 </Button>
               </form>

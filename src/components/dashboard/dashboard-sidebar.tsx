@@ -136,7 +136,9 @@ export function DashboardSidebar() {
                 {state !== 'collapsed' && (
                   <div className="flex flex-col">
                     <span className="text-xs font-bold truncate max-w-[120px]">{profile?.name || user?.email}</span>
-                    <span className="text-[10px] text-primary uppercase font-bold tracking-wider">{userRole}</span>
+                    <span className="text-[10px] text-primary uppercase font-bold tracking-wider">
+                      {userRole === 'Admin' ? 'Overlord' : userRole === 'Trainer' ? 'Shield' : 'Trainee'}
+                    </span>
                   </div>
                 )}
               </div>
@@ -145,9 +147,9 @@ export function DashboardSidebar() {
           </DropdownMenuTrigger>
           <DropdownMenuContent side="right" align="end" className="w-56 bg-card border-white/10 rounded-2xl shadow-2xl">
              <DropdownMenuLabel className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground px-4 py-3">Switch Perspective</DropdownMenuLabel>
-             <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer" onClick={() => handleRoleSwitch('Admin')}><Settings className="h-4 w-4" /> Admin View</DropdownMenuItem>
-             <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer" onClick={() => handleRoleSwitch('Trainer')}><ShieldCheck className="h-4 w-4" /> Trainer View</DropdownMenuItem>
-             <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer" onClick={() => handleRoleSwitch('Student')}><UserCircle className="h-4 w-4" /> Student View</DropdownMenuItem>
+             <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer" onClick={() => handleRoleSwitch('Admin')}><Settings className="h-4 w-4" /> Overlord View</DropdownMenuItem>
+             <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer" onClick={() => handleRoleSwitch('Trainer')}><ShieldCheck className="h-4 w-4" /> Shield View</DropdownMenuItem>
+             <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer" onClick={() => handleRoleSwitch('Student')}><UserCircle className="h-4 w-4" /> Trainee View</DropdownMenuItem>
              <DropdownMenuSeparator className="bg-white/5" />
              <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer text-red-500 hover:text-red-400" onClick={handleLogout}><LogOut className="h-4 w-4" /> Logout</DropdownMenuItem>
           </DropdownMenuContent>
