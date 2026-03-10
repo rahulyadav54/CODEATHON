@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from 'next/link';
@@ -18,7 +17,8 @@ import {
   Users,
   ClipboardList,
   Activity,
-  History
+  History,
+  GraduationCap
 } from 'lucide-react';
 import {
   Sidebar,
@@ -54,6 +54,7 @@ const navItems = [
   { name: 'User Directory', icon: Users, path: '/dashboard/admin/users', roles: ['Admin'] },
   { name: 'Analytics', icon: BarChart3, path: '/dashboard/analytics', roles: ['Admin'] },
   { name: 'Maintenance', icon: ClipboardList, path: '/dashboard/maintenance', roles: ['Admin', 'Technician'] },
+  { name: 'AI Learner', icon: GraduationCap, path: '/dashboard/ai-learner', roles: ['Admin', 'Technician', 'Trainee'] },
   { name: 'AI Zaya', icon: MessageSquare, path: '/dashboard/ai-zaya', roles: ['Admin', 'Technician', 'Trainee'] },
 ];
 

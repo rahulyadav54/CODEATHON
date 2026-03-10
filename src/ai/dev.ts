@@ -6,3 +6,4 @@ import '@/ai/flows/strategic-machine-allocation-recs-flow.ts';
 import '@/ai/flows/predictive-maintenance-insight-gen-flow.ts';
 import '@/ai/flows/ai-zaya-operational-support-flow.ts';
 import '@/ai/flows/bulk-machine-extraction-flow.ts';
+import '@/ai/flows/ai-learner-flow.ts';
