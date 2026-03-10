@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { useFirestore, useCollection, useUser, useDoc } from '@/firebase';
-import { collection, doc, updateDoc, serverTimestamp, addDoc, setDoc } from 'firebase/firestore';
+import { collection, doc, updateDoc, serverTimestamp, addDoc, setDoc, query, orderBy, limit } from 'firebase/firestore';
 import { Activity, Thermometer, Zap, Wrench, Loader2, Save, History, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Slider } from '@/components/ui/slider';
@@ -25,6 +25,13 @@ export default function TechnicianUpdatesPage() {
 
   const machinesQuery = useMemo(() => db ? collection(db, 'machines') : null, [db]);
   const { data: machines, loading: loadingMachines } = useCollection(machinesQuery);
+
+  // Real-time query for the most recent calibration logs
+  const recentLogsQuery = useMemo(() => 
+    db ? query(collection(db, 'usageLogs'), orderBy('createdAt', 'desc'), limit(3)) : null,
+    [db]
+  );
+  const { data: recentLogs } = useCollection(recentLogsQuery);
 
   const [selectedMachineId, setSelectedMachineId] = useState('');
   const [health, setHealth] = useState([90]);
@@ -51,10 +58,9 @@ export default function TechnicianUpdatesPage() {
       status: health[0] < 50 ? 'Under Maintenance' : (selectedMachine?.status || 'Available')
     };
 
-    // Use setDoc with merge to ensure it works even if the specific doc was missed in seeding
     setDoc(machineRef, updateData, { merge: true })
       .then(() => {
-        // Log maintenance report to usageLogs
+        // Log maintenance report to usageLogs for the real-time "Recent Reports" feed
         addDoc(collection(db, 'usageLogs'), {
           machineId: selectedMachineId,
           machineName: selectedMachine?.name || selectedMachineId,
@@ -71,7 +77,6 @@ export default function TechnicianUpdatesPage() {
           description: `Telemetry for ${selectedMachine?.name || selectedMachineId} has been updated in the cloud.` 
         });
         
-        // Reset form inputs but keep the machine selected for potential further edits
         setTemp('');
         setVibration('');
         setHours('');
@@ -132,7 +137,7 @@ export default function TechnicianUpdatesPage() {
                   {selectedMachine && (
                     <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10 flex items-center justify-between animate-in fade-in zoom-in-95 duration-300">
                        <div className="flex flex-col gap-1">
-                          <span className="text-[10px] text-primary/60 font-bold uppercase tracking-widest">Active Status</span>
+                          <span className="text-[10px] text-primary/60 font-bold uppercase tracking-widest">Live Status</span>
                           <span className="text-sm font-bold text-white">{selectedMachine.status}</span>
                        </div>
                        <Badge variant="outline" className="border-primary/20 bg-primary/5 text-primary text-[10px] uppercase font-bold px-3 py-1">
@@ -225,18 +230,25 @@ export default function TechnicianUpdatesPage() {
                 <CardTitle className="text-sm font-headline font-bold uppercase tracking-widest text-muted-foreground">Recent Reports</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4 px-6 pb-6">
-                 {[1, 2, 3].map(i => (
-                   <div key={i} className="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between group cursor-default hover:bg-white/[0.08] transition-all">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-xl bg-green-500/10"><CheckCircle2 className="h-4 w-4 text-green-500" /></div>
-                        <div>
-                          <p className="text-xs font-bold text-white">Calibration Log</p>
-                          <p className="text-[10px] text-muted-foreground font-mono">NODE-SYNC • Successful</p>
+                 {recentLogs.length > 0 ? (
+                   recentLogs.map((log) => (
+                    <div key={log.id} className="p-4 rounded-2xl bg-white/5 border border-white/5 flex items-center justify-between group cursor-default hover:bg-white/[0.08] transition-all">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-xl bg-green-500/10"><CheckCircle2 className="h-4 w-4 text-green-500" /></div>
+                          <div>
+                            <p className="text-xs font-bold text-white">Calibration Log</p>
+                            <p className="text-[10px] text-muted-foreground font-mono">{log.machineId} • Successful</p>
+                          </div>
                         </div>
-                      </div>
-                      <History className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary transition-colors" />
+                        <History className="h-4 w-4 text-muted-foreground/30 group-hover:text-primary transition-colors" />
+                    </div>
+                   ))
+                 ) : (
+                   <div className="text-center py-8 opacity-20 flex flex-col items-center gap-2">
+                     <History className="h-8 w-8" />
+                     <p className="text-[10px] font-bold uppercase tracking-widest">No reports synced</p>
                    </div>
-                 ))}
+                 )}
               </CardContent>
            </Card>
 
@@ -251,7 +263,7 @@ export default function TechnicianUpdatesPage() {
                  <div>
                     <h3 className="text-sm font-headline font-bold uppercase tracking-widest text-accent">Maintenance Radar</h3>
                     <p className="text-[11px] text-muted-foreground mt-2 leading-relaxed">
-                      Real-time anomaly detection is monitoring 4 nodes for abnormal vibration patterns.
+                      4 nodes showing abnormal vibration patterns. Full diagnostic recommended.
                     </p>
                  </div>
                  <Button variant="outline" className="w-full border-accent/30 text-accent hover:bg-accent/10 h-11 rounded-xl text-xs font-bold uppercase tracking-widest">View Anomaly Map</Button>
