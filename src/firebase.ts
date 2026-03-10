@@ -6,7 +6,10 @@ import { getAuth, Auth, onAuthStateChanged, User } from 'firebase/auth';
 import { getFirestore, Firestore, doc, onSnapshot, DocumentData, Query, DocumentReference } from 'firebase/firestore';
 import { useState, useEffect } from 'react';
 
-// Your new web app's Firebase configuration
+/**
+ * Firebase Configuration for CODEATHON AI
+ * Project: codeathon-ai-ff8c1
+ */
 const firebaseConfig = {
   apiKey: "AIzaSyB5E2bcxYpLFOj7v0tA4ryGKvZspDMQn4I",
   authDomain: "codeathon-ai-ff8c1.firebaseapp.com",
@@ -18,8 +21,10 @@ const firebaseConfig = {
   measurementId: "G-45RBLM0RJX"
 };
 
+// Initialize Firebase (Singleton Pattern)
 function getFirebaseApp(): FirebaseApp {
   if (getApps().length > 0) return getApp();
+  console.log("Firebase Node: Initializing connection...");
   return initializeApp(firebaseConfig);
 }
 
@@ -28,7 +33,7 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 
 /**
- * Custom hook to manage Firebase user state.
+ * useUser Hook: Manages real-time authentication state.
  */
 export function useUser() {
   const [user, setUser] = useState<User | null>(null);
@@ -36,6 +41,7 @@ export function useUser() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log("Auth State Changed:", user ? `Operator ${user.email} connected` : "No operator connected");
       setUser(user);
       setLoading(false);
     });
@@ -46,7 +52,7 @@ export function useUser() {
 }
 
 /**
- * Custom hook to fetch a single Firestore document in real-time.
+ * useDoc Hook: Fetches a single Firestore document in real-time.
  */
 export function useDoc(docRef: DocumentReference | null) {
   const [data, setData] = useState<any>(null);
@@ -67,7 +73,7 @@ export function useDoc(docRef: DocumentReference | null) {
         setLoading(false);
       },
       (err) => {
-        console.error("useDoc error:", err);
+        console.error("Firestore sync error:", err);
         setError(err);
         setLoading(false);
       }
@@ -79,7 +85,7 @@ export function useDoc(docRef: DocumentReference | null) {
 }
 
 /**
- * Custom hook to fetch a Firestore collection/query in real-time.
+ * useCollection Hook: Fetches a Firestore collection/query in real-time.
  */
 export function useCollection(query: Query | null) {
   const [data, setData] = useState<any[]>([]);
@@ -101,7 +107,7 @@ export function useCollection(query: Query | null) {
         setLoading(false);
       },
       (err) => {
-        console.error("useCollection error:", err);
+        console.error("Collection sync error:", err);
         setError(err);
         setLoading(false);
       }

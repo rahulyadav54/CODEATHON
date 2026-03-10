@@ -33,6 +33,7 @@ export default function LoginPage() {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
+  // Auth Guard: If already connected, push to dashboard
   useEffect(() => {
     if (user && !isAuthenticating) {
       router.push('/dashboard');
@@ -46,6 +47,7 @@ export default function LoginPage() {
 
     try {
       if (isSignUp) {
+        // Create New Operator Node
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         await setDoc(doc(db, 'users', userCredential.user.uid), {
           id: userCredential.user.uid,
@@ -56,16 +58,24 @@ export default function LoginPage() {
           totalHours: 0,
           createdAt: new Date().toISOString()
         });
-        toast({ title: "Account Created", description: `Welcome to CODEATHON AI.` });
+        toast({ title: "Node Established", description: "Your operator profile has been initialized." });
       } else {
+        // Authenticate Existing Node
         await signInWithEmailAndPassword(auth, email, password);
-        toast({ title: "Access Granted", description: "Node connection established." });
+        toast({ title: "Access Granted", description: "Node connection verified." });
       }
+      router.push('/dashboard');
     } catch (error: any) {
+      let errorMessage = "Access denied by neural firewall.";
+      if (error.code === 'auth/wrong-password') errorMessage = "Incorrect security key.";
+      if (error.code === 'auth/user-not-found') errorMessage = "Credential ID not recognized.";
+      if (error.code === 'auth/invalid-email') errorMessage = "Invalid Credential ID format.";
+      if (error.code === 'auth/email-already-in-use') errorMessage = "Credential ID already registered.";
+      
       toast({
         variant: "destructive",
-        title: "Auth Failed",
-        description: error.message
+        title: "Auth Failure",
+        description: errorMessage
       });
       setIsAuthenticating(false);
     }
@@ -92,8 +102,9 @@ export default function LoginPage() {
           createdAt: new Date().toISOString()
         });
       }
+      router.push('/dashboard');
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Auth Failed", description: error.message });
+      toast({ variant: "destructive", title: "External Auth Error", description: error.message });
       setIsAuthenticating(false);
     }
   };
@@ -108,6 +119,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-[#020617] relative overflow-hidden font-body selection:bg-primary/30">
+      {/* Immersive Animated Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <motion.div 
           animate={{ 
@@ -132,6 +144,7 @@ export default function LoginPage() {
       </div>
 
       <div className="w-full max-w-xl relative z-10">
+        {/* Branding Header */}
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -154,6 +167,7 @@ export default function LoginPage() {
           </div>
         </motion.div>
 
+        {/* Auth Card */}
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -177,13 +191,13 @@ export default function LoginPage() {
                           placeholder="Full Name" 
                           value={name}
                           onChange={(e) => setName(e.target.value)}
-                          className="bg-white/[0.03] border-white/10 rounded-2xl h-14 text-sm focus:ring-blue-500/30"
+                          className="bg-white/[0.03] border-white/10 rounded-2xl h-14 text-sm focus:ring-blue-500/30 transition-all focus:border-blue-500/50"
                           required
                         />
                       </div>
 
                       <div className="space-y-4">
-                        <Label className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em] ml-1">Security Level</Label>
+                        <Label className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em] ml-1">Security Tier</Label>
                         <RadioGroup 
                           value={role} 
                           onValueChange={(v: any) => setRole(v)} 
@@ -201,7 +215,7 @@ export default function LoginPage() {
                                 className={cn(
                                   "flex flex-col items-center justify-center gap-3 p-4 rounded-2xl border cursor-pointer transition-all",
                                   role === item.id 
-                                    ? "bg-blue-600/10 border-blue-500/50 text-blue-400" 
+                                    ? "bg-blue-600/10 border-blue-500/50 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.1)]" 
                                     : "bg-white/[0.02] border-white/5 text-white/30 hover:bg-white/5"
                                 )}
                               >
@@ -227,7 +241,7 @@ export default function LoginPage() {
                         placeholder="operator@codeathon.ai" 
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 text-sm focus:ring-blue-500/30"
+                        className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 text-sm focus:ring-blue-500/30 transition-all focus:border-blue-500/50"
                         required
                       />
                     </div>
@@ -242,7 +256,7 @@ export default function LoginPage() {
                         placeholder="••••••••" 
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 text-sm focus:ring-blue-500/30"
+                        className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 text-sm focus:ring-blue-500/30 transition-all focus:border-blue-500/50"
                         required
                       />
                     </div>
@@ -259,7 +273,7 @@ export default function LoginPage() {
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 border-0 rounded-2xl h-16 font-bold transition-all text-white group" 
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 border-0 rounded-2xl h-16 font-bold transition-all text-white group shadow-xl shadow-blue-900/20" 
                   disabled={isAuthenticating}
                 >
                   {isAuthenticating ? (
@@ -275,12 +289,12 @@ export default function LoginPage() {
 
               <div className="relative py-4">
                 <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-white/5"></span></div>
-                <div className="relative flex justify-center text-[9px] uppercase font-bold tracking-[0.3em]"><span className="bg-[#020617]/50 px-4 text-white/20">External Auth</span></div>
+                <div className="relative flex justify-center text-[9px] uppercase font-bold tracking-[0.3em]"><span className="bg-[#020617]/50 px-4 text-white/20">Secure External Auth</span></div>
               </div>
 
               <Button 
                 variant="outline" 
-                className="w-full border-white/10 rounded-2xl h-14 bg-white/[0.02] hover:bg-white/5 text-white/60 flex items-center justify-center gap-3 font-semibold text-sm" 
+                className="w-full border-white/10 rounded-2xl h-14 bg-white/[0.02] hover:bg-white/5 text-white/60 flex items-center justify-center gap-3 font-semibold text-sm transition-colors" 
                 onClick={loginWithGoogle} 
                 disabled={isAuthenticating}
               >
@@ -290,7 +304,7 @@ export default function LoginPage() {
                   <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
                   <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
                 </svg>
-                Google Engine
+                Google Core
               </Button>
 
               <div className="text-center">
@@ -298,7 +312,7 @@ export default function LoginPage() {
                   onClick={() => setIsSignUp(!isSignUp)}
                   className="text-[10px] uppercase font-bold tracking-[0.2em] text-white/30 hover:text-blue-400 transition-all"
                 >
-                  {isSignUp ? 'Connection exists? Login' : 'New Node? Create Deployment'}
+                  {isSignUp ? 'Connection exists? Initialize' : 'New Node? Establish Deployment'}
                 </button>
               </div>
             </CardContent>
