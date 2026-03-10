@@ -66,58 +66,30 @@ export default function MachineManagement() {
   });
 
   return (
-    <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-500">
+    <div className="space-y-6 animate-in slide-in-from-bottom-2 duration-500 pb-10">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-headline font-bold">Machine Management</h1>
-          <p className="text-muted-foreground">Register and manage training equipment inventory.</p>
+          <h1 className="text-2xl md:text-3xl font-headline font-bold">Machine Management</h1>
+          <p className="text-xs md:text-sm text-muted-foreground">Register and manage equipment inventory.</p>
         </div>
         <Dialog>
           <DialogTrigger asChild>
-            <Button className="rounded-xl tech-gradient border-0 px-6">
+            <Button className="w-full sm:w-auto rounded-xl tech-gradient border-0 px-6">
               <Plus className="mr-2 h-4 w-4" /> Add Machine
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-card border-white/5 max-w-md">
+          <DialogContent className="bg-card border-white/5 max-w-md w-[95vw] rounded-2xl">
             <DialogHeader>
-              <DialogTitle className="font-headline text-xl">Register New Machine</DialogTitle>
-              <DialogDescription>Enter details for the new training equipment.</DialogDescription>
+              <DialogTitle className="font-headline text-xl text-left">Register New Machine</DialogTitle>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="id" className="text-right">Machine ID</Label>
+                <Label htmlFor="id" className="text-right text-xs">ID</Label>
                 <Input id="id" className="col-span-3 bg-white/5 border-white/10" placeholder="CNC-XXX" />
               </div>
               <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">Name</Label>
+                <Label htmlFor="name" className="text-right text-xs">Name</Label>
                 <Input id="name" className="col-span-3 bg-white/5 border-white/10" placeholder="Pro Router V2" />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="type" className="text-right">Type</Label>
-                <Select>
-                  <SelectTrigger className="col-span-3 bg-white/5 border-white/10">
-                    <SelectValue placeholder="Select type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cnc">CNC Machine</SelectItem>
-                    <SelectItem value="3d">3D Printer</SelectItem>
-                    <SelectItem value="welding">Welding</SelectItem>
-                    <SelectItem value="electrical">Electrical Kit</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="center" className="text-right">Center</Label>
-                <Select>
-                  <SelectTrigger className="col-span-3 bg-white/5 border-white/10">
-                    <SelectValue placeholder="Select location" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="c1">Chennai</SelectItem>
-                    <SelectItem value="c2">Delhi</SelectItem>
-                    <SelectItem value="c3">Bangalore</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
             </div>
             <DialogFooter>
@@ -131,58 +103,50 @@ export default function MachineManagement() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input 
-            placeholder="Search by ID or Name..." 
+            placeholder="Search..." 
             className="pl-9 bg-white/[0.03] border-white/10 rounded-xl" 
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full md:w-auto">
           <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger className="w-[150px] bg-white/[0.03] border-white/10 rounded-xl">
-              <Filter className="mr-2 h-4 w-4" />
-              <SelectValue placeholder="All Types" />
+            <SelectTrigger className="flex-1 md:w-[150px] bg-white/[0.03] border-white/10 rounded-xl">
+              <SelectValue placeholder="All" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="All">All Types</SelectItem>
               <SelectItem value="CNC">CNC</SelectItem>
               <SelectItem value="3D Printer">3D Printer</SelectItem>
               <SelectItem value="Welding">Welding</SelectItem>
-              <SelectItem value="Electrical">Electrical</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" className="rounded-xl border-white/10 bg-white/[0.03]">Export CSV</Button>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-white/5 bg-white/[0.02] overflow-hidden">
-        <Table>
+      <div className="rounded-2xl border border-white/5 bg-white/[0.02] overflow-x-auto">
+        <Table className="min-w-[800px] md:min-w-full">
           <TableHeader className="bg-white/5">
             <TableRow className="border-white/5 hover:bg-transparent">
-              <TableHead className="w-[120px]">Machine ID</TableHead>
-              <TableHead>Machine Name</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Center</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Usage (Hrs)</TableHead>
-              <TableHead>Health</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="w-[120px] text-xs">ID</TableHead>
+              <TableHead className="text-xs">Name</TableHead>
+              <TableHead className="text-xs">Type</TableHead>
+              <TableHead className="text-xs">Status</TableHead>
+              <TableHead className="text-xs">Health</TableHead>
+              <TableHead className="text-right text-xs">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredMachines.map((m) => (
               <TableRow key={m.id} className="border-white/5 hover:bg-white/5 transition-colors">
-                <TableCell className="font-mono text-xs text-primary font-bold">{m.id}</TableCell>
-                <TableCell className="font-medium">{m.name}</TableCell>
+                <TableCell className="font-mono text-[10px] text-primary font-bold">{m.id}</TableCell>
+                <TableCell className="text-xs md:text-sm font-medium">{m.name}</TableCell>
                 <TableCell>
-                  <Badge variant="outline" className="rounded-md font-normal border-white/10 bg-white/5">{m.type}</Badge>
-                </TableCell>
-                <TableCell className="text-muted-foreground">
-                  {m.centerId === 'c1' ? 'Chennai' : m.centerId === 'c2' ? 'Delhi' : 'Bangalore'}
+                  <Badge variant="outline" className="rounded-md text-[10px] border-white/10 bg-white/5">{m.type}</Badge>
                 </TableCell>
                 <TableCell>
                   <Badge className={cn(
-                    "rounded-full px-2.5 py-0.5 border-0 font-medium",
+                    "rounded-full px-2 py-0.5 border-0 text-[10px] font-medium",
                     m.status === 'Available' ? 'bg-green-500/10 text-green-500' :
                     m.status === 'In Use' ? 'bg-yellow-500/10 text-yellow-500' :
                     'bg-red-500/10 text-red-500'
@@ -190,14 +154,13 @@ export default function MachineManagement() {
                     {m.status}
                   </Badge>
                 </TableCell>
-                <TableCell>{m.usageHours.toLocaleString()}</TableCell>
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <Activity className={cn(
                       "h-3 w-3",
                       m.healthScore > 90 ? 'text-green-500' : m.healthScore > 75 ? 'text-yellow-500' : 'text-red-500'
                     )} />
-                    <span className="font-bold">{m.healthScore}%</span>
+                    <span className="text-xs font-bold">{m.healthScore}%</span>
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
@@ -208,12 +171,8 @@ export default function MachineManagement() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="bg-card border-white/10">
-                      <DropdownMenuLabel>Machine Actions</DropdownMenuLabel>
-                      <DropdownMenuItem className="cursor-pointer gap-2"><QrCode className="h-4 w-4" /> Generate QR Code</DropdownMenuItem>
-                      <DropdownMenuItem className="cursor-pointer gap-2"><History className="h-4 w-4" /> View Logs</DropdownMenuItem>
-                      <DropdownMenuItem className="cursor-pointer gap-2"><Wrench className="h-4 w-4" /> Maintenance</DropdownMenuItem>
-                      <DropdownMenuSeparator className="bg-white/5" />
-                      <DropdownMenuItem className="cursor-pointer text-destructive focus:text-destructive">Delete Machine</DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer gap-2 text-xs"><History className="h-3.5 w-3.5" /> Logs</DropdownMenuItem>
+                      <DropdownMenuItem className="cursor-pointer gap-2 text-xs"><Wrench className="h-3.5 w-3.5" /> Maintenance</DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </TableCell>
