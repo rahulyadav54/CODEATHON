@@ -58,13 +58,11 @@ export default function LoginPage() {
     if (!validateForm()) return;
 
     setIsAuthenticating(true);
-    console.log(`Starting ${isSignUp ? 'Registration' : 'Login'}...`);
 
     try {
       if (isSignUp) {
         // 1. Create New Operator Node in Firebase Auth
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        console.log("Auth Node Created:", userCredential.user.uid);
 
         // 2. Initialize Operator Profile in Firestore
         await setDoc(doc(db, 'users', userCredential.user.uid), {
@@ -76,25 +74,23 @@ export default function LoginPage() {
           totalHours: 0,
           createdAt: new Date().toISOString()
         });
-        console.log("Firestore Profile Initialized");
         
         toast({ title: "Node Established", description: "Your operator profile has been successfully registered." });
       } else {
         // Authenticate Existing Node
         await signInWithEmailAndPassword(auth, email, password);
-        console.log("Auth Node Verified");
         toast({ title: "Access Granted", description: "Node connection verified." });
       }
       
-      // The useEffect will handle the redirection once the user state updates
+      // Navigation is handled by the useEffect watching auth state
     } catch (error: any) {
-      console.error("Auth Error:", error.code, error.message);
+      // We do not use console.error here to avoid triggering the Next.js error overlay
       let errorMessage = "Access denied by neural firewall.";
       
       if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-        errorMessage = "Incorrect security key or credential.";
+        errorMessage = "Incorrect security key or credential combination.";
       } else if (error.code === 'auth/user-not-found') {
-        errorMessage = "Credential ID not recognized.";
+        errorMessage = "Credential ID not recognized. Please sign up first.";
       } else if (error.code === 'auth/email-already-in-use') {
         errorMessage = "Credential ID already registered in the system.";
       } else if (error.code === 'auth/weak-password') {
@@ -194,7 +190,7 @@ export default function LoginPage() {
           </div>
           <div className="space-y-3">
             <h1 className="text-4xl md:text-5xl font-headline font-bold text-white tracking-tight leading-tight">
-              {isSignUp ? 'New Operator' : 'Operator Access'}
+              {isSignUp ? 'Establish Node' : 'Operator Access'}
             </h1>
             <p className="text-white/40 text-sm md:text-base max-w-lg mx-auto font-light">
               Centralized Intelligence Layer for Next-Gen Skill Development
@@ -317,11 +313,11 @@ export default function LoginPage() {
                   {isAuthenticating ? (
                     <div className="flex items-center gap-3">
                       <Loader2 className="h-5 w-5 animate-spin" />
-                      <span className="tracking-widest uppercase text-xs">Processing...</span>
+                      <span className="tracking-widest uppercase text-xs">Syncing...</span>
                     </div>
                   ) : (
                     <div className="flex items-center justify-center gap-3">
-                      <span className="tracking-widest uppercase text-xs">{isSignUp ? 'Establish Node' : 'Initialize Connection'}</span>
+                      <span className="tracking-widest uppercase text-xs">{isSignUp ? 'Establish Deployment' : 'Initialize Connection'}</span>
                       <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                     </div>
                   )}
