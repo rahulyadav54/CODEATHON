@@ -61,6 +61,21 @@
         "endTime": { "type": "string" },
         "duration": { "type": "number" }
       }
+    },
+    "MaintenanceTicket": {
+      "title": "Maintenance Ticket",
+      "description": "A record of a maintenance issue for a machine.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "machineId": { "type": "string" },
+        "issue": { "type": "string" },
+        "priority": { "type": "string", "enum": ["Low", "Medium", "High", "Critical"] },
+        "assignedTechnician": { "type": "string" },
+        "status": { "type": "string", "enum": ["Open", "In Progress", "Resolved"] },
+        "createdAt": { "type": "object" }
+      },
+      "required": ["machineId", "issue", "priority", "status"]
     }
   },
   "auth": {
@@ -82,6 +97,10 @@
     "/usageLogs/{logId}": {
       "schema": "#/entities/UsageLog",
       "description": "Machine usage history logs."
+    },
+    "/maintenanceTickets/{ticketId}": {
+      "schema": "#/entities/MaintenanceTicket",
+      "description": "Maintenance work orders."
     }
   }
 }
