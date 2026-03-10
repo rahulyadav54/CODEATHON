@@ -16,7 +16,7 @@ import {
 import { 
   Cpu, Zap, CheckCircle2, Activity, ClipboardList, ShieldAlert, 
   GraduationCap, Wrench, Calendar, BarChart3, AlertTriangle, 
-  TrendingUp, Clock, IndianRupee 
+  TrendingUp, Clock, IndianRupee, BookOpen, UserCheck
 } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { useFirestore, useCollection, useUser, useDoc } from '@/firebase';
@@ -57,12 +57,6 @@ export default function DashboardOverview() {
   );
   const { data: pendingBookings } = useCollection(pendingBookingsQuery);
 
-  const maintenanceAlertsQuery = useMemo(() => 
-    db ? query(collection(db, 'machines'), where('healthScore', '<', 75)) : null,
-    [db]
-  );
-  const { data: healthAlerts } = useCollection(maintenanceAlertsQuery);
-
   if (!mounted || !profile) return null;
 
   const totalMachines = machines.length;
@@ -74,10 +68,10 @@ export default function DashboardOverview() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl font-headline font-bold">
-            {role === 'Admin' ? 'Admin Command Node' : role === 'Technician' ? 'Technician Hub' : 'Student Portal'}
+            {role === 'Admin' ? 'Admin Command Node' : role === 'Technician' ? 'Teacher Command Hub' : 'Student Portal'}
           </h1>
           <p className="text-xs md:text-sm text-muted-foreground">
-            {role === 'Admin' ? 'Strategic oversight and resource allocation.' : role === 'Technician' ? 'Real-time telemetry and maintenance reporting.' : 'Track your certification path and reserve equipment.'}
+            {role === 'Admin' ? 'Strategic oversight and resource allocation.' : role === 'Technician' ? 'Real-time telemetry and student progress.' : 'Track your certification path and reserve equipment.'}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -170,87 +164,149 @@ export default function DashboardOverview() {
           </Card>
         </div>
 
-        {/* Real-time Analytics Sidebar Card (Based on User Image) */}
+        {/* Sidebar Content - Role Dependent */}
         <div className="space-y-6">
-          <Card className="border-white/10 bg-[#1a1c24] rounded-[2.5rem] overflow-hidden shadow-2xl border flex flex-col h-full min-h-[600px]">
-            <CardHeader className="p-8 pb-4">
-              <div className="flex items-center gap-3">
-                <BarChart3 className="h-5 w-5 text-primary" />
-                <CardTitle className="text-lg font-headline font-bold">Real-time Analytics</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="px-8 pb-8 space-y-10 flex-1">
-              {/* 4-Stat Grid */}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
-                  <span className="text-2xl font-bold text-primary">100%</span>
-                  <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Utilization Rate</span>
+          {role === 'Admin' ? (
+            /* ADMIN ONLY: Real-time Analytics Sidebar Card */
+            <Card className="border-white/10 bg-[#1a1c24] rounded-[2.5rem] overflow-hidden shadow-2xl border flex flex-col h-full min-h-[600px]">
+              <CardHeader className="p-8 pb-4">
+                <div className="flex items-center gap-3">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-lg font-headline font-bold">Real-time Analytics</CardTitle>
                 </div>
-                <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
-                  <span className="text-2xl font-bold text-white">3h</span>
-                  <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Avg Downtime</span>
+              </CardHeader>
+              <CardContent className="px-8 pb-8 space-y-10 flex-1">
+                {/* 4-Stat Grid */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
+                    <span className="text-2xl font-bold text-primary">100%</span>
+                    <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Utilization Rate</span>
+                  </div>
+                  <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
+                    <span className="text-2xl font-bold text-white">3h</span>
+                    <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Avg Downtime</span>
+                  </div>
+                  <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
+                    <span className="text-2xl font-bold text-primary flex items-center"><IndianRupee className="h-4 w-4 mr-0.5" /> 4500</span>
+                    <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Monthly Cost</span>
+                  </div>
+                  <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
+                    <span className="text-2xl font-bold text-white">46%</span>
+                    <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">OEE Index</span>
+                  </div>
                 </div>
-                <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
-                  <span className="text-2xl font-bold text-primary flex items-center"><IndianRupee className="h-4 w-4 mr-0.5" /> 4500</span>
-                  <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">Monthly Cost</span>
-                </div>
-                <div className="p-6 rounded-3xl bg-white/[0.02] border border-white/5 flex flex-col items-center justify-center text-center space-y-1">
-                  <span className="text-2xl font-bold text-white">46%</span>
-                  <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider">OEE Index</span>
-                </div>
-              </div>
 
-              {/* Machine Utilization Bars */}
-              <div className="space-y-6">
-                <h3 className="text-xs font-bold uppercase tracking-[0.1em] text-white/80">Machine Utilization</h3>
-                <div className="space-y-5">
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-end">
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold">CNC</span>
-                        <span className="text-[10px] text-muted-foreground">Machine-01</span>
+                {/* Machine Utilization Bars */}
+                <div className="space-y-6">
+                  <h3 className="text-xs font-bold uppercase tracking-[0.1em] text-white/80">Machine Utilization</h3>
+                  <div className="space-y-5">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-end">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold">CNC</span>
+                          <span className="text-[10px] text-muted-foreground">Machine-01</span>
+                        </div>
+                        <span className="text-xs font-bold">100%</span>
                       </div>
-                      <span className="text-xs font-bold">100%</span>
+                      <Progress value={100} className="h-2.5 bg-white/5 [&>div]:bg-primary" />
                     </div>
-                    <Progress value={100} className="h-2.5 bg-white/5 [&>div]:bg-primary" />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-end">
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold">Welding</span>
-                        <span className="text-[10px] text-muted-foreground">Station-02</span>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-end">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold">Welding</span>
+                          <span className="text-[10px] text-muted-foreground">Station-02</span>
+                        </div>
+                        <span className="text-xs font-bold">100%</span>
                       </div>
-                      <span className="text-xs font-bold">100%</span>
+                      <Progress value={100} className="h-2.5 bg-white/5 [&>div]:bg-primary" />
                     </div>
-                    <Progress value={100} className="h-2.5 bg-white/5 [&>div]:bg-primary" />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex justify-between items-end">
-                      <div className="flex flex-col">
-                        <span className="text-xs font-bold">3D Printer-03</span>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-end">
+                        <div className="flex flex-col">
+                          <span className="text-xs font-bold">3D Printer-03</span>
+                        </div>
+                        <span className="text-xs font-bold">100%</span>
                       </div>
-                      <span className="text-xs font-bold">100%</span>
+                      <Progress value={100} className="h-2.5 bg-white/5 [&>div]:bg-primary" />
                     </div>
-                    <Progress value={100} className="h-2.5 bg-white/5 [&>div]:bg-primary" />
                   </div>
                 </div>
-              </div>
 
-              {/* Recent Alerts (Placeholder Footer) */}
-              <div className="pt-6 border-t border-white/5">
-                <div className="flex items-center gap-2 mb-4">
-                  <AlertTriangle className="h-4 w-4 text-orange-500" />
-                  <span className="text-xs font-bold uppercase tracking-wider">Recent Alerts</span>
-                </div>
-                <div className="space-y-3">
-                  <div className="p-3 rounded-xl bg-orange-500/5 border border-orange-500/10 flex items-center justify-between">
-                    <span className="text-[10px] font-medium text-orange-200">CNC-101 Peak Temperature</span>
-                    <span className="text-[8px] text-muted-foreground uppercase">2m ago</span>
+                {/* Recent Alerts Footer */}
+                <div className="pt-6 border-t border-white/5">
+                  <div className="flex items-center gap-2 mb-4">
+                    <AlertTriangle className="h-4 w-4 text-orange-500" />
+                    <span className="text-xs font-bold uppercase tracking-wider">Recent Alerts</span>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="p-3 rounded-xl bg-orange-500/5 border border-orange-500/10 flex items-center justify-between">
+                      <span className="text-[10px] font-medium text-orange-200">CNC-101 Peak Temperature</span>
+                      <span className="text-[8px] text-muted-foreground uppercase">2m ago</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : role === 'Technician' ? (
+            /* TEACHER/TECHNICIAN SIDEBAR */
+            <Card className="border-white/5 bg-white/[0.02] rounded-3xl overflow-hidden shadow-2xl border">
+              <CardHeader className="p-8">
+                <div className="flex items-center gap-3">
+                  <Wrench className="h-5 w-5 text-accent" />
+                  <CardTitle className="text-lg font-headline font-bold">Center Status</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="px-8 pb-8 space-y-6">
+                 <div className="p-6 rounded-2xl bg-accent/5 border border-accent/10">
+                    <p className="text-[10px] text-accent uppercase font-bold tracking-widest mb-2">Pending Maintenance</p>
+                    <p className="text-3xl font-bold">4 Nodes</p>
+                 </div>
+                 <div className="space-y-4">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Upcoming Sessions</h3>
+                    <div className="space-y-3">
+                      <div className="p-4 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <UserCheck className="h-4 w-4 text-primary" />
+                          <span className="text-xs font-bold">CNC Training (2)</span>
+                        </div>
+                        <span className="text-[10px] text-muted-foreground">09:00 AM</span>
+                      </div>
+                    </div>
+                 </div>
+              </CardContent>
+            </Card>
+          ) : (
+            /* STUDENT/TRAINEE SIDEBAR */
+            <Card className="border-white/5 bg-white/[0.02] rounded-3xl overflow-hidden shadow-2xl border">
+              <CardHeader className="p-8">
+                <div className="flex items-center gap-3">
+                  <TrendingUp className="h-5 w-5 text-green-500" />
+                  <CardTitle className="text-lg font-headline font-bold">Certification Path</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="px-8 pb-8 space-y-8">
+                 <div className="space-y-3">
+                    <div className="flex justify-between items-end">
+                      <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Skill Progress</span>
+                      <span className="text-sm font-bold text-primary">65%</span>
+                    </div>
+                    <Progress value={65} className="h-3 bg-white/5" />
+                 </div>
+                 <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10">
+                    <div className="flex items-center gap-3 mb-4">
+                      <BookOpen className="h-5 w-5 text-primary" />
+                      <h4 className="text-sm font-bold">Next Milestone</h4>
+                    </div>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      Complete 5 more hours on the CNC Master to unlock Advanced Routing modules.
+                    </p>
+                    <Link href="/dashboard/ai-zaya" className="block mt-4">
+                      <Button variant="outline" className="w-full text-[10px] font-bold uppercase border-primary/20 hover:bg-primary/5">Consult AI Zaya</Button>
+                    </Link>
+                 </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
