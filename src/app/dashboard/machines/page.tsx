@@ -48,6 +48,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from '@/lib/utils';
 
 export default function MachineManagement() {
   const [machines, setMachines] = useState<Machine[]>([]);
