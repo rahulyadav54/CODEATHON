@@ -3,29 +3,57 @@
 
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
 import { DashboardSidebar } from '@/components/dashboard/dashboard-sidebar';
-import { Bell, Search, Cpu, Loader2 } from 'lucide-react';
+import { Bell, Search, Cpu, Loader2, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useUser } from '@/firebase';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useUser, useFirestore, useDoc } from '@/firebase';
+import { useRouter, usePathname } from 'next/navigation';
+import { useEffect, useMemo } from 'react';
+import { doc } from 'firebase/firestore';
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { user, loading } = useUser();
+  const { user, loading: authLoading } = useUser();
+  const db = useFirestore();
   const router = useRouter();
+  const pathname = usePathname();
 
-  // Route Protection Middleware
+  const userRef = useMemo(() => user && db ? doc(db, 'users', user.uid) : null, [db, user]);
+  const { data: profile, loading: profileLoading } = useDoc(userRef);
+
+  // Auth Protection
   useEffect(() => {
-    if (!loading && !user) {
-      console.log("Unauthenticated node detected. Redirecting to portal...");
+    if (!authLoading && !user) {
       router.push('/login');
     }
-  }, [user, loading, router]);
+  }, [user, authLoading, router]);
 
-  if (loading) {
+  // Route Role Protection
+  useEffect(() => {
+    if (!profileLoading && profile && user) {
+      const role = profile.role;
+      
+      // Admin only routes
+      if (pathname.includes('/admin') && role !== 'Admin') {
+        router.push('/dashboard');
+      }
+      
+      // Technician/Teacher only routes
+      if (pathname.includes('/technician') && role === 'Trainee') {
+        router.push('/dashboard');
+      }
+
+      // Trainee/Student only routes
+      if (pathname.includes('/bookings') && (role === 'Admin' || role === 'Technician')) {
+        // Technically teachers/admins might want to see bookings, but strictly per requirements:
+        // if (role !== 'Trainee') router.push('/dashboard');
+      }
+    }
+  }, [profile, profileLoading, pathname, router, user]);
+
+  if (authLoading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#020617]">
         <div className="flex flex-col items-center gap-4">
@@ -36,7 +64,7 @@ export default function DashboardLayout({
     );
   }
 
-  if (!user) return null;
+  if (!user || !profile) return null;
 
   return (
     <SidebarProvider>

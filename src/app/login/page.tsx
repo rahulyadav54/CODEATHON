@@ -31,11 +31,11 @@ export default function LoginPage() {
   const [role, setRole] = useState<'Trainee' | 'Technician' | 'Admin'>('Trainee');
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
-  useEffect(() => {
-    if (user && !isAuthenticating && !authLoading) {
-      router.push('/dashboard');
-    }
-  }, [user, isAuthenticating, authLoading, router]);
+  // Redirection logic based on role
+  const redirectBasedOnRole = (userRole: string) => {
+    toast({ title: "Access Granted", description: `Synchronizing ${userRole} portal...` });
+    router.push('/dashboard');
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,21 +57,39 @@ export default function LoginPage() {
         }
 
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await setDoc(doc(db, 'users', userCredential.user.uid), {
+        const userData = {
           id: userCredential.user.uid,
           name: name,
           email: userCredential.user.email,
-          role: role,
+          role: role, // Storing Admin, Technician, or Trainee
           skillLevel: 'Beginner',
           totalHours: 0,
           createdAt: new Date().toISOString()
-        });
-        toast({ title: "Enrollment Successful", description: `Welcome to CODEATHON AI, ${name}!` });
+        };
+        
+        await setDoc(doc(db, 'users', userCredential.user.uid), userData);
+        redirectBasedOnRole(role);
       } else {
-        await signInWithEmailAndPassword(auth, email, password);
-        toast({ title: "Uplink Established", description: "Secure session verified." });
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        
+        // Fetch role from Firestore immediately after login
+        const userDoc = await getDoc(doc(db, 'users', userCredential.user.uid));
+        if (userDoc.exists()) {
+          const fetchedRole = userDoc.data().role;
+          redirectBasedOnRole(fetchedRole || 'Trainee');
+        } else {
+          // If no profile exists, default to Trainee and create a shell profile
+          await setDoc(doc(db, 'users', userCredential.user.uid), {
+            id: userCredential.user.uid,
+            email: userCredential.user.email,
+            role: 'Trainee',
+            skillLevel: 'Beginner',
+            totalHours: 0,
+            createdAt: new Date().toISOString()
+          });
+          redirectBasedOnRole('Trainee');
+        }
       }
-      router.push('/dashboard');
     } catch (error: any) {
       setIsAuthenticating(false);
       let errorMessage = "Access denied. Credentials mismatch.";
@@ -90,6 +108,7 @@ export default function LoginPage() {
       const userDocRef = doc(db, 'users', result.user.uid);
       const userDoc = await getDoc(userDocRef);
       
+      let finalRole = 'Trainee';
       if (!userDoc.exists()) {
         await setDoc(userDocRef, {
           id: result.user.uid,
@@ -100,9 +119,10 @@ export default function LoginPage() {
           totalHours: 0,
           createdAt: new Date().toISOString()
         });
+      } else {
+        finalRole = userDoc.data().role || 'Trainee';
       }
-      toast({ title: "Neural Link Successful" });
-      router.push('/dashboard');
+      redirectBasedOnRole(finalRole);
     } catch (error: any) {
       setIsAuthenticating(false);
       toast({ variant: "destructive", title: "Auth Error", description: error.message });
@@ -131,7 +151,7 @@ export default function LoginPage() {
             <span className="text-xl font-headline font-bold tracking-widest text-white uppercase">CODEATHON <span className="text-blue-400">AI</span></span>
           </div>
           <h1 className="text-4xl md:text-5xl font-headline font-bold text-white tracking-tighter">
-            {isSignUp ? 'New Operator Enrollment' : 'Operator Uplink'}
+            {isSignUp ? 'Operator Enrollment' : 'Operator Uplink'}
           </h1>
           <p className="text-muted-foreground text-sm max-w-sm mx-auto">Access the decentralized machine management infrastructure.</p>
         </div>
@@ -146,7 +166,7 @@ export default function LoginPage() {
                       <Label className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em]">Full Legal Name</Label>
                       <div className="relative">
                         <UserIcon className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20" />
-                        <Input placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 focus:border-blue-500/50 transition-all" />
+                        <Input placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 focus:border-blue-500/50 transition-all shadow-inner" />
                       </div>
                     </div>
 
@@ -177,26 +197,26 @@ export default function LoginPage() {
                   <Label className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em]">Operator Email</Label>
                   <div className="relative">
                     <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20" />
-                    <Input type="email" placeholder="name@codeathon.ai" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 focus:border-blue-500/50 transition-all" />
+                    <Input type="email" placeholder="name@codeathon.ai" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 focus:border-blue-500/50 transition-all shadow-inner" />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em]">Security Key</Label>
                   <div className="relative">
                     <Lock className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20" />
-                    <Input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 focus:border-blue-500/50 transition-all" />
+                    <Input type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 focus:border-blue-500/50 transition-all shadow-inner" />
                   </div>
                 </div>
               </div>
 
-              <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 border-0 rounded-2xl h-16 font-bold text-white group transition-all" disabled={isAuthenticating}>
+              <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 border-0 rounded-2xl h-16 font-bold text-white group transition-all shadow-xl" disabled={isAuthenticating}>
                 {isAuthenticating ? <Loader2 className="h-5 w-5 animate-spin" /> : <span className="tracking-widest uppercase text-xs">{isSignUp ? 'Initiate Enrollment' : 'Establish Uplink'}</span>}
               </Button>
             </form>
 
             <div className="relative py-4">
               <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-white/5"></span></div>
-              <div className="relative flex justify-center text-[9px] uppercase font-bold tracking-[0.3em]"><span className="bg-[#020617] px-4 text-white/20">OR PROVIDER ACCESS</span></div>
+              <div className="relative flex justify-center text-[9px] uppercase font-bold tracking-[0.3em]"><span className="bg-black/80 px-4 text-white/20">OR PROVIDER ACCESS</span></div>
             </div>
 
             <Button variant="outline" className="w-full border-white/10 rounded-2xl h-14 bg-white/[0.02] hover:bg-white/5 text-white/60 flex items-center justify-center gap-3 transition-colors" onClick={loginWithGoogle} disabled={isAuthenticating}>
