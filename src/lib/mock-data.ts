@@ -1,5 +1,16 @@
 export type MachineStatus = 'Available' | 'In Use' | 'Under Maintenance';
 export type UserRole = 'Admin' | 'Trainer' | 'Student';
+export type SkillLevel = 'Beginner' | 'Intermediate' | 'Expert';
+export type BookingStatus = 'Pending' | 'Approved' | 'Rejected';
+
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  skillLevel: SkillLevel;
+  totalHours: number;
+}
 
 export interface Machine {
   id: string;
@@ -22,11 +33,14 @@ export interface Center {
 
 export interface Booking {
   id: string;
+  studentId: string;
   studentName: string;
   machineId: string;
   centerId: string;
   timeSlot: string;
   purpose: string;
+  status: BookingStatus;
+  createdAt: string;
 }
 
 export interface MaintenanceTicket {
@@ -54,9 +68,15 @@ export const initialMachines: Machine[] = [
   { id: 'LAB-PC-24', name: 'CAD/CAM Workstation', type: 'Computer Lab', centerId: 'c1', status: 'In Use', usageHours: 3200, lastMaintenance: '2024-01-05', healthScore: 78, temperature: 38, vibration: 0.001 },
 ];
 
+export const initialUsers: User[] = [
+  { id: 'u1', name: 'Rahul Sharma', email: 'rahul@student.com', role: 'Student', skillLevel: 'Intermediate', totalHours: 45 },
+  { id: 'u2', name: 'Ananya Gupta', email: 'ananya@trainer.com', role: 'Trainer', skillLevel: 'Expert', totalHours: 250 },
+  { id: 'u3', name: 'System Admin', email: 'admin@skillmach.ai', role: 'Admin', skillLevel: 'Expert', totalHours: 500 },
+];
+
 export const initialBookings: Booking[] = [
-  { id: 'B1', studentName: 'Rahul Sharma', machineId: 'CNC-101', centerId: 'c1', timeSlot: '10:00 AM - 12:00 PM', purpose: 'Advanced Milling Project' },
-  { id: 'B2', studentName: 'Priya Singh', machineId: 'LAB-PC-24', centerId: 'c1', timeSlot: '02:00 PM - 04:00 PM', purpose: 'AutoCAD Certification' },
+  { id: 'B1', studentId: 'u1', studentName: 'Rahul Sharma', machineId: 'CNC-101', centerId: 'c1', timeSlot: '10:00 AM - 12:00 PM', purpose: 'Advanced Milling Project', status: 'Approved', createdAt: '2024-03-10' },
+  { id: 'B2', studentId: 'u1', studentName: 'Rahul Sharma', machineId: 'LAB-PC-24', centerId: 'c1', timeSlot: '02:00 PM - 04:00 PM', purpose: 'AutoCAD Certification', status: 'Pending', createdAt: '2024-03-11' },
 ];
 
 export const initialTickets: MaintenanceTicket[] = [
@@ -69,6 +89,15 @@ export class MockDB {
   static bookings = [...initialBookings];
   static tickets = [...initialTickets];
   static centers = [...centers];
+  static users = [...initialUsers];
+  
+  // Simulation of a logged-in user
+  static currentUser: User = initialUsers[0]; 
+
+  static setCurrentUser(role: UserRole) {
+    const user = this.users.find(u => u.role === role);
+    if (user) this.currentUser = user;
+  }
 
   static addMachine(machine: Machine) {
     this.machines.push(machine);
@@ -81,6 +110,11 @@ export class MockDB {
 
   static addBooking(booking: Booking) {
     this.bookings.push(booking);
+  }
+
+  static updateBookingStatus(id: string, status: BookingStatus) {
+    const b = this.bookings.find(x => x.id === id);
+    if (b) b.status = status;
   }
 
   static addTicket(ticket: MaintenanceTicket) {

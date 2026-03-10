@@ -11,9 +11,11 @@ import {
   Ticket, 
   MessageSquare, 
   Settings,
-  LogOut,
+  ShieldCheck,
+  UserCircle,
   ChevronRight,
-  MoreVertical
+  MoreVertical,
+  Activity
 } from 'lucide-react';
 import {
   Sidebar,
@@ -23,29 +25,41 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarTrigger,
   useSidebar
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { MockDB, UserRole } from '@/lib/mock-data';
+import { useState } from 'react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
 const navItems = [
-  { name: 'Overview', icon: LayoutDashboard, path: '/dashboard' },
-  { name: 'Machines', icon: Cpu, path: '/dashboard/machines' },
-  { name: 'Bookings', icon: Calendar, path: '/dashboard/bookings' },
-  { name: 'Analytics', icon: BarChart3, path: '/dashboard/analytics' },
-  { name: 'Maintenance', icon: Ticket, path: '/dashboard/maintenance' },
-  { name: 'AI Zaya', icon: MessageSquare, path: '/dashboard/ai-zaya' },
+  { name: 'Overview', icon: LayoutDashboard, path: '/dashboard', roles: ['Admin', 'Trainer', 'Student'] },
+  { name: 'Machines', icon: Cpu, path: '/dashboard/machines', roles: ['Admin', 'Trainer'] },
+  { name: 'Portal', icon: Calendar, path: '/dashboard/bookings', roles: ['Student'] },
+  { name: 'Approvals', icon: ShieldCheck, path: '/dashboard/trainer/approvals', roles: ['Trainer'] },
+  { name: 'Analytics', icon: BarChart3, path: '/dashboard/analytics', roles: ['Admin'] },
+  { name: 'Maintenance', icon: Ticket, path: '/dashboard/maintenance', roles: ['Admin', 'Trainer'] },
+  { name: 'AI Zaya', icon: MessageSquare, path: '/dashboard/ai-zaya', roles: ['Admin', 'Trainer', 'Student'] },
 ];
 
 export function DashboardSidebar() {
   const pathname = usePathname();
   const { state } = useSidebar();
+  const [role, setRole] = useState<UserRole>(MockDB.currentUser.role);
+
+  const handleRoleSwitch = (newRole: UserRole) => {
+    MockDB.setCurrentUser(newRole);
+    setRole(newRole);
+    window.location.reload(); // Simple reload to refresh role-based UI
+  };
+
+  const filteredNav = navItems.filter(item => item.roles.includes(role));
 
   return (
     <Sidebar collapsible="icon" className="border-r border-white/5 bg-sidebar">
       <SidebarHeader className="h-16 flex items-center px-4">
         <Link href="/dashboard" className="flex items-center gap-3">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white shadow-lg shadow-primary/20">
             <Cpu className="h-5 w-5" />
           </div>
           {state !== 'collapsed' && (
@@ -54,23 +68,23 @@ export function DashboardSidebar() {
         </Link>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarMenu className="px-2 mt-4">
-          {navItems.map((item) => (
+        <SidebarMenu className="px-3 mt-6">
+          {filteredNav.map((item) => (
             <SidebarMenuItem key={item.path}>
               <SidebarMenuButton
                 asChild
                 isActive={pathname === item.path}
                 tooltip={item.name}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-6 rounded-xl transition-all",
+                  "flex items-center gap-3 px-4 py-6 rounded-2xl transition-all mb-1",
                   pathname === item.path 
-                    ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20" 
-                    : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
+                    ? "bg-primary text-white shadow-xl shadow-primary/30" 
+                    : "text-muted-foreground hover:bg-white/5 hover:text-white"
                 )}
               >
                 <Link href={item.path}>
                   <item.icon className="h-5 w-5" />
-                  <span>{item.name}</span>
+                  <span className="text-xs font-bold tracking-tight">{item.name}</span>
                   {pathname === item.path && state !== 'collapsed' && (
                     <ChevronRight className="ml-auto h-4 w-4" />
                   )}
@@ -81,23 +95,31 @@ export function DashboardSidebar() {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="p-4 border-t border-white/5">
-        <div className="flex items-center justify-between group">
-          <div className="flex items-center gap-3">
-            <Avatar className="h-8 w-8 border border-primary/20">
-              <AvatarImage src="https://picsum.photos/seed/admin-avatar/40/40" />
-              <AvatarFallback>AD</AvatarFallback>
-            </Avatar>
-            {state !== 'collapsed' && (
-              <div className="flex flex-col">
-                <span className="text-sm font-medium">Admin User</span>
-                <span className="text-xs text-muted-foreground">admin@skillmach.ai</span>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <div className="flex items-center justify-between group cursor-pointer hover:bg-white/5 p-2 rounded-xl transition-colors">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-8 w-8 border border-primary/20">
+                  <AvatarImage src={`https://picsum.photos/seed/${role}/40/40`} />
+                  <AvatarFallback>{role[0]}</AvatarFallback>
+                </Avatar>
+                {state !== 'collapsed' && (
+                  <div className="flex flex-col">
+                    <span className="text-xs font-bold">{MockDB.currentUser.name}</span>
+                    <span className="text-[10px] text-primary uppercase font-bold tracking-wider">{role}</span>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          {state !== 'collapsed' && (
-            <MoreVertical className="h-4 w-4 text-muted-foreground cursor-pointer hover:text-foreground" />
-          )}
-        </div>
+              {state !== 'collapsed' && <MoreVertical className="h-4 w-4 text-muted-foreground" />}
+            </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="right" align="end" className="w-56 bg-card border-white/10 rounded-2xl shadow-2xl">
+             <DropdownMenuLabel className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground px-4 py-3">Switch Perspective</DropdownMenuLabel>
+             <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer" onClick={() => handleRoleSwitch('Admin')}><Settings className="h-4 w-4" /> Admin View</DropdownMenuItem>
+             <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer" onClick={() => handleRoleSwitch('Trainer')}><ShieldCheck className="h-4 w-4" /> Trainer View</DropdownMenuItem>
+             <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer" onClick={() => handleRoleSwitch('Student')}><UserCircle className="h-4 w-4" /> Student View</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </SidebarFooter>
     </Sidebar>
   );
