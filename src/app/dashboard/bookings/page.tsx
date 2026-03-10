@@ -195,12 +195,12 @@ export default function BookingsPage() {
 
                 <div className="space-y-3">
                    <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">Session Timeline (Calendar)</Label>
-                   <div className="border border-white/10 rounded-[2rem] p-4 bg-white/[0.03] shadow-inner flex justify-center min-h-[350px]">
+                   <div className="border border-white/10 rounded-[2rem] p-4 bg-white/[0.03] shadow-inner flex flex-col items-center min-h-[350px]">
                       <Calendar 
                         mode="single" 
                         selected={date} 
                         onSelect={setDate} 
-                        className="w-full h-full"
+                        className="rounded-md border-0"
                         captionLayout="dropdown"
                         fromYear={2024}
                         toYear={2030}
