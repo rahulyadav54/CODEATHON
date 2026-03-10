@@ -10,8 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { 
   Cpu, ShieldCheck, GraduationCap, Settings, 
-  ArrowRight, Loader2, Mail, Lock, UserPlus, LogIn, Sparkles,
-  Github
+  ArrowRight, Loader2, Mail, Lock, UserPlus, LogIn, Sparkles
 } from 'lucide-react';
 import { useAuth, useFirestore, useUser } from '@/firebase';
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword } from 'firebase/auth';
@@ -154,7 +153,7 @@ export default function LoginPage() {
           </div>
           <div className="space-y-3">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-headline font-bold text-white tracking-tight leading-[1.1]">
-              {isSignUp ? 'Initialize Deployment' : 'Neural Core Authorization'}
+              {isSignUp ? 'Initialize Deployment' : 'Operator Access'}
             </h1>
             <p className="text-blue-100/50 text-sm md:text-base max-w-lg mx-auto leading-relaxed font-light">
               Centralized Intelligence Layer for Next-Gen Skill Development
