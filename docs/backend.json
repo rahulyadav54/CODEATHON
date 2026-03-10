@@ -28,7 +28,8 @@
         "usageHours": { "type": "number" },
         "healthScore": { "type": "number" },
         "temperature": { "type": "number" },
-        "vibration": { "type": "number" }
+        "vibration": { "type": "number" },
+        "lastMaintenance": { "type": "string" }
       }
     },
     "Booking": {
@@ -50,16 +51,20 @@
     },
     "UsageLog": {
       "title": "Usage Log",
-      "description": "Historical record of machine usage sessions.",
+      "description": "Historical record of machine usage sessions and telemetry updates.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "machineId": { "type": "string" },
+        "machineName": { "type": "string" },
         "userId": { "type": "string" },
         "userName": { "type": "string" },
         "startTime": { "type": "string" },
         "endTime": { "type": "string" },
-        "duration": { "type": "number" }
+        "duration": { "type": "number" },
+        "type": { "type": "string" },
+        "status": { "type": "string" },
+        "createdAt": { "type": "object" }
       }
     },
     "MaintenanceTicket": {
@@ -96,7 +101,7 @@
     },
     "/usageLogs/{logId}": {
       "schema": "#/entities/UsageLog",
-      "description": "Machine usage history logs."
+      "description": "Machine usage history and telemetry audit logs."
     },
     "/maintenanceTickets/{ticketId}": {
       "schema": "#/entities/MaintenanceTicket",
