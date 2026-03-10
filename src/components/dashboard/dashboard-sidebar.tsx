@@ -93,7 +93,7 @@ export function DashboardSidebar() {
             <Cpu className="h-5 w-5" />
           </div>
           {state !== 'collapsed' && (
-            <span className="text-lg font-headline font-bold">SkillMach AI</span>
+            <span className="text-lg font-headline font-bold">CODEATHON AI</span>
           )}
         </Link>
       </SidebarHeader>

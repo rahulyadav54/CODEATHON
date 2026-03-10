@@ -41,13 +41,13 @@ export default function DashboardLayout({
               <SidebarTrigger className="text-muted-foreground" />
               <div className="flex items-center gap-2 md:hidden">
                  <Cpu className="h-5 w-5 text-primary" />
-                 <span className="text-sm font-headline font-bold">SkillMach</span>
+                 <span className="text-sm font-headline font-bold">CODEATHON</span>
               </div>
               <div className="hidden md:flex relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <input
                   type="search"
-                  placeholder="Search machines..."
+                  placeholder="Search fleet..."
                   className="bg-white/5 border-0 rounded-full pl-9 pr-4 py-2 text-sm focus:ring-1 focus:ring-primary w-48 lg:w-64 outline-none transition-all"
                 />
               </div>

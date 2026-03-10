@@ -1,8 +1,9 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'SkillMach AI - Smart Training Machine Management',
+  title: 'CODEATHON AI - Smart Training Machine Management',
   description: 'A scalable and data-driven framework for efficient management of training machinery across skill development centers.',
 };
 

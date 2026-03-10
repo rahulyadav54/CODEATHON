@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Cpu, Zap, BarChart3, ShieldCheck, ArrowRight, Building2, Factory, GraduationCap, Globe } from 'lucide-react';
@@ -9,7 +10,7 @@ export default function LandingPage() {
       <header className="px-4 lg:px-6 h-16 flex items-center border-b border-white/10 bg-background/50 backdrop-blur-md sticky top-0 z-50">
         <Link className="flex items-center justify-center gap-2" href="/">
           <Cpu className="h-6 w-6 text-primary" />
-          <span className="text-xl font-headline font-bold">SkillMach <span className="text-primary">AI</span></span>
+          <span className="text-xl font-headline font-bold">CODEATHON <span className="text-primary">AI</span></span>
         </Link>
         <nav className="ml-auto flex gap-4 sm:gap-6 items-center">
           <Link className="text-sm font-medium hover:text-primary transition-colors hidden md:block" href="#features">
@@ -67,7 +68,7 @@ export default function LandingPage() {
         <section id="use-cases" className="w-full py-20 bg-white/[0.02]">
           <div className="container mx-auto px-4 md:px-6">
             <div className="text-center mb-16">
-               <h2 className="text-3xl font-headline font-bold mb-4">Where can you use SkillMach AI?</h2>
+               <h2 className="text-3xl font-headline font-bold mb-4">Where can you use CODEATHON AI?</h2>
                <p className="text-muted-foreground max-w-2xl mx-auto">Our platform scales to support various types of technical training environments.</p>
             </div>
             <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
@@ -138,7 +139,7 @@ export default function LandingPage() {
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2">
             <Cpu className="h-5 w-5 text-primary" />
-            <p className="text-sm font-headline font-bold">SkillMach AI &copy; 2024</p>
+            <p className="text-sm font-headline font-bold">CODEATHON AI &copy; 2024</p>
           </div>
           <p className="text-xs text-muted-foreground">
             Smart Infrastructure for Smarter Training.
