@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from 'react';
@@ -11,7 +12,7 @@ import { collection, query, where, updateDoc, doc, serverTimestamp, addDoc } fro
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 
-export default function AdminApprovalsPage() {
+export default function ApprovalConsolePage() {
   const { toast } = useToast();
   const db = useFirestore();
 
@@ -53,12 +54,12 @@ export default function AdminApprovalsPage() {
     <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-700 pb-10">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-headline font-bold">Admin Approval Console</h1>
+          <h1 className="text-3xl font-headline font-bold">Approval Console</h1>
           <p className="text-muted-foreground text-sm">Strategic oversight of machine access and trainee readiness.</p>
         </div>
         <Badge className="bg-primary/20 text-primary hover:bg-primary/30 py-2 px-4 rounded-xl flex items-center gap-2">
           <ShieldCheck className="h-4 w-4" />
-          System Administrator Mode
+          Operator Authorization Active
         </Badge>
       </div>
 
