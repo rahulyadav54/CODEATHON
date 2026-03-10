@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from 'react';
@@ -65,10 +66,10 @@ export default function LoginPage() {
           totalHours: 0,
           createdAt: new Date().toISOString()
         });
-        toast({ title: "Operator Registered", description: `Welcome to CODEATHON AI, ${name}!` });
+        toast({ title: "Enrollment Successful", description: `Welcome to CODEATHON AI, ${name}!` });
       } else {
         await signInWithEmailAndPassword(auth, email, password);
-        toast({ title: "Link Established", description: "Secure tunnel verified." });
+        toast({ title: "Uplink Established", description: "Secure session verified." });
       }
       router.push('/dashboard');
     } catch (error: any) {
@@ -130,7 +131,7 @@ export default function LoginPage() {
             <span className="text-xl font-headline font-bold tracking-widest text-white uppercase">CODEATHON <span className="text-blue-400">AI</span></span>
           </div>
           <h1 className="text-4xl md:text-5xl font-headline font-bold text-white tracking-tighter">
-            {isSignUp ? 'Enroll New Operator' : 'Establish Command Link'}
+            {isSignUp ? 'New Operator Enrollment' : 'Operator Uplink'}
           </h1>
           <p className="text-muted-foreground text-sm max-w-sm mx-auto">Access the decentralized machine management infrastructure.</p>
         </div>
@@ -142,19 +143,19 @@ export default function LoginPage() {
                 {isSignUp && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }} className="space-y-7 overflow-hidden">
                     <div className="space-y-2">
-                      <Label className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em]">Full Operator Name</Label>
+                      <Label className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em]">Full Legal Name</Label>
                       <div className="relative">
                         <UserIcon className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20" />
-                        <Input placeholder="Arjun Reddy" value={name} onChange={(e) => setName(e.target.value)} className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 focus:border-blue-500/50 transition-all" />
+                        <Input placeholder="John Doe" value={name} onChange={(e) => setName(e.target.value)} className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 focus:border-blue-500/50 transition-all" />
                       </div>
                     </div>
 
                     <div className="space-y-4">
-                      <Label className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em]">Deployment Tier</Label>
+                      <Label className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em]">Designated Role</Label>
                       <RadioGroup value={role} onValueChange={(v: any) => setRole(v)} className="grid grid-cols-3 gap-3">
                         {[
-                          { id: 'Trainee', label: 'Trainee', icon: GraduationCap },
-                          { id: 'Technician', label: 'Technician', icon: Wrench },
+                          { id: 'Trainee', label: 'Student', icon: GraduationCap },
+                          { id: 'Technician', label: 'Teacher', icon: Wrench },
                           { id: 'Admin', label: 'Admin', icon: ShieldAlert }
                         ].map((item) => (
                           <div key={item.id}>
@@ -173,7 +174,7 @@ export default function LoginPage() {
 
               <div className="space-y-5">
                 <div className="space-y-2">
-                  <Label className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em]">Email Address</Label>
+                  <Label className="text-[10px] uppercase font-bold text-blue-400/60 tracking-[0.2em]">Operator Email</Label>
                   <div className="relative">
                     <Mail className="absolute left-5 top-1/2 -translate-y-1/2 h-5 w-5 text-white/20" />
                     <Input type="email" placeholder="name@codeathon.ai" value={email} onChange={(e) => setEmail(e.target.value)} className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 focus:border-blue-500/50 transition-all" />
@@ -189,7 +190,7 @@ export default function LoginPage() {
               </div>
 
               <Button type="submit" className="w-full bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 border-0 rounded-2xl h-16 font-bold text-white group transition-all" disabled={isAuthenticating}>
-                {isAuthenticating ? <Loader2 className="h-5 w-5 animate-spin" /> : <span className="tracking-widest uppercase text-xs">{isSignUp ? 'Initiate Deployment' : 'Establish Uplink'}</span>}
+                {isAuthenticating ? <Loader2 className="h-5 w-5 animate-spin" /> : <span className="tracking-widest uppercase text-xs">{isSignUp ? 'Initiate Enrollment' : 'Establish Uplink'}</span>}
               </Button>
             </form>
 

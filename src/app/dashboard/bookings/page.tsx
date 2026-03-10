@@ -1,10 +1,11 @@
+
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Calendar as CalendarIcon, Clock, BadgeInfo, Loader2, Activity, Zap, Thermometer, User as UserIcon } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, BadgeInfo, Loader2, Activity, Zap, Thermometer, User as UserIcon, CheckCircle2 } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useFirestore, useUser, useCollection, useDoc } from '@/firebase';
 import { collection, query, where, addDoc, serverTimestamp, doc } from 'firebase/firestore';
 import { Progress } from '@/components/ui/progress';
+import { useSearchParams } from 'next/navigation';
 
 const timeSlots = [
   "09:00 AM - 11:00 AM",
@@ -23,6 +25,7 @@ const timeSlots = [
 
 export default function BookingsPage() {
   const { toast } = useToast();
+  const searchParams = useSearchParams();
   const db = useFirestore();
   const { user } = useUser();
   
@@ -43,6 +46,11 @@ export default function BookingsPage() {
   const [selectedSlot, setSelectedSlot] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  useEffect(() => {
+    const machineId = searchParams.get('machineId');
+    if (machineId) setSelectedMachineId(machineId);
+  }, [searchParams]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!db || !user || !profile) return;
@@ -52,7 +60,6 @@ export default function BookingsPage() {
     }
     
     setIsSubmitting(true);
-    
     try {
       const selectedMachine = machines.find(m => m.id === selectedMachineId);
       await addDoc(collection(db, 'bookings'), {
@@ -67,7 +74,7 @@ export default function BookingsPage() {
         createdAt: serverTimestamp()
       });
       
-      toast({ title: "Booking Submitted", description: "Your request is pending instructor approval." });
+      toast({ title: "Booking Submitted", description: "Your request is pending teacher approval." });
       setSelectedMachineId('');
       setSelectedSlot('');
     } catch (error: any) {
@@ -83,15 +90,15 @@ export default function BookingsPage() {
     <div className="space-y-8 animate-in fade-in duration-700 pb-10">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-headline font-bold">Equipment Portal</h1>
-          <p className="text-muted-foreground text-sm">Reserve advanced machinery and track your learning progress.</p>
+          <h1 className="text-3xl font-headline font-bold">Student Portal</h1>
+          <p className="text-muted-foreground text-sm">Initiate equipment reservations and track your certification path.</p>
         </div>
         <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-white/5 border border-white/10 shadow-xl">
            <Badge variant="outline" className="bg-primary/10 text-primary border-0 rounded-xl px-4 py-1.5 font-bold uppercase tracking-widest text-[10px]">
             Tier: {profile?.skillLevel || 'Beginner'}
            </Badge>
            <div className="flex flex-col">
-            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">Total Experience</span>
+            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight">Experience Logs</span>
             <span className="text-sm font-bold text-white">{profile?.totalHours || 0} Hrs</span>
            </div>
         </div>
@@ -100,8 +107,8 @@ export default function BookingsPage() {
       {approvedBookings.length > 0 && (
         <section className="space-y-4">
           <h2 className="text-xl font-headline font-bold flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-yellow-500/20"><Zap className="h-5 w-5 text-yellow-500" /></div>
-            Live Operational Nodes
+            <div className="p-2 rounded-xl bg-green-500/20"><CheckCircle2 className="h-5 w-5 text-green-500" /></div>
+            Active Operational Nodes
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {approvedBookings.map(booking => (
@@ -111,7 +118,7 @@ export default function BookingsPage() {
                 </div>
                 <CardHeader className="pb-2">
                   <div className="flex justify-between items-start relative z-10">
-                    <Badge className="bg-white/20 hover:bg-white/30 text-[9px] uppercase tracking-widest border-0 rounded-full px-3">Active Session</Badge>
+                    <Badge className="bg-white/20 hover:bg-white/30 text-[9px] uppercase tracking-widest border-0 rounded-full px-3">Session Live</Badge>
                     <span className="text-[10px] opacity-70 font-mono font-bold">NODE_{booking.id.slice(0, 4).toUpperCase()}</span>
                   </div>
                   <CardTitle className="text-2xl mt-4 font-headline">{booking.machineName}</CardTitle>
@@ -122,21 +129,21 @@ export default function BookingsPage() {
                       <div className="flex items-center gap-2 text-[10px] opacity-70 mb-2 font-bold uppercase tracking-widest">
                         <Thermometer className="h-3.5 w-3.5" /> Core Temp
                       </div>
-                      <p className="text-2xl font-bold">42.4°C</p>
+                      <p className="text-2xl font-bold">38.2°C</p>
                     </div>
                     <div className="bg-black/20 p-4 rounded-2xl border border-white/5">
                       <div className="flex items-center gap-2 text-[10px] opacity-70 mb-2 font-bold uppercase tracking-widest">
                         <Activity className="h-3.5 w-3.5" /> Vibration
                       </div>
-                      <p className="text-2xl font-bold">0.024mm</p>
+                      <p className="text-2xl font-bold">0.012mm</p>
                     </div>
                   </div>
                   <div className="space-y-3">
                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest opacity-80">
-                      <span>Module Completion</span>
-                      <span>65%</span>
+                      <span>Module Progress</span>
+                      <span>45%</span>
                     </div>
-                    <Progress value={65} className="h-2 bg-white/10" />
+                    <Progress value={45} className="h-2 bg-white/10" />
                   </div>
                 </CardContent>
               </Card>
@@ -148,15 +155,15 @@ export default function BookingsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <Card className="lg:col-span-2 border-white/5 bg-white/[0.02] rounded-[2.5rem] overflow-hidden shadow-2xl border">
           <CardHeader className="bg-white/[0.03] border-b border-white/5 p-8">
-            <CardTitle className="font-headline text-2xl">New Session Reservation</CardTitle>
-            <CardDescription className="text-base">Target equipment must match your security tier and training module requirements.</CardDescription>
+            <CardTitle className="font-headline text-2xl">New Equipment Reservation</CardTitle>
+            <CardDescription className="text-base">Select a machine and time slot to begin your training module.</CardDescription>
           </CardHeader>
           <CardContent className="p-8">
             <form onSubmit={handleSubmit} className="space-y-10">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                 <div className="space-y-8">
                   <div className="space-y-3">
-                    <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">Target Equipment Node</Label>
+                    <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">Target Machine</Label>
                     <Select onValueChange={setSelectedMachineId} value={selectedMachineId}>
                       <SelectTrigger className="bg-white/5 border-white/10 rounded-2xl h-14 text-base focus:ring-primary/50">
                         <SelectValue placeholder="Identify machine..." />
@@ -170,7 +177,7 @@ export default function BookingsPage() {
                   </div>
 
                   <div className="space-y-3">
-                    <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">Operational Slot</Label>
+                    <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">Time Slot</Label>
                     <div className="grid grid-cols-1 gap-3">
                       {timeSlots.map(slot => (
                         <Button
@@ -194,26 +201,23 @@ export default function BookingsPage() {
                 </div>
 
                 <div className="space-y-3">
-                   <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">Session Timeline (Calendar)</Label>
-                   <div className="border border-white/10 rounded-[2rem] p-4 bg-white/[0.03] shadow-inner flex flex-col items-center min-h-[350px]">
+                   <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] ml-1">Training Date</Label>
+                   <div className="border border-white/10 rounded-[2rem] p-4 bg-white/[0.03] shadow-inner flex flex-col items-center">
                       <Calendar 
                         mode="single" 
                         selected={date} 
                         onSelect={setDate} 
                         className="rounded-md border-0"
                         captionLayout="dropdown"
-                        fromYear={2024}
-                        toYear={2030}
                         disabled={(date) => date < new Date(new Date().setHours(0,0,0,0))}
                       />
                    </div>
-                   <p className="text-[10px] text-center text-muted-foreground italic mt-2">Select an available date for deployment.</p>
                 </div>
               </div>
 
               <div className="pt-4 border-t border-white/5">
                 <Button size="lg" className="w-full tech-gradient border-0 rounded-2xl h-16 text-base font-bold shadow-2xl shadow-primary/20 hover:scale-[1.01] transition-transform" disabled={!selectedMachineId || !selectedSlot || isSubmitting}>
-                  {isSubmitting ? <Loader2 className="h-6 w-6 animate-spin mr-3" /> : "Initiate Reservation Protocol"}
+                  {isSubmitting ? <Loader2 className="h-6 w-6 animate-spin mr-3" /> : "Request Machine Access"}
                 </Button>
               </div>
             </form>
@@ -223,7 +227,7 @@ export default function BookingsPage() {
         <div className="space-y-6">
            <Card className="border-white/5 bg-white/[0.02] rounded-[2.5rem] overflow-hidden shadow-2xl border">
              <CardHeader className="bg-white/[0.03] border-b border-white/5 px-8 py-6">
-               <CardTitle className="text-xl font-headline">Uplink Status</CardTitle>
+               <CardTitle className="text-xl font-headline">Status Uplink</CardTitle>
              </CardHeader>
              <CardContent className="px-8 py-8 space-y-6">
                {loadingBookings ? (
@@ -240,12 +244,12 @@ export default function BookingsPage() {
                        )}>
                          {booking.status}
                        </Badge>
-                       <span className="text-[10px] font-mono text-primary font-bold bg-primary/10 px-2 py-0.5 rounded-md">#{booking.id.slice(0, 4).toUpperCase()}</span>
+                       <span className="text-[10px] font-mono text-primary font-bold bg-primary/10 px-2 py-0.5 rounded-md">ID_{booking.id.slice(0, 4).toUpperCase()}</span>
                      </div>
                      <h4 className="font-bold text-lg text-white group-hover:text-primary transition-colors">{booking.machineName}</h4>
                      <div className="mt-4 space-y-2">
                         <p className="text-[11px] text-muted-foreground flex items-center gap-2">
-                          <CalendarIcon className="h-3.5 w-3.5" /> {booking.date ? new Date(booking.date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) : 'N/A'}
+                          <CalendarIcon className="h-3.5 w-3.5" /> {booking.date ? new Date(booking.date).toLocaleDateString() : 'N/A'}
                         </p>
                         <p className="text-[11px] text-muted-foreground flex items-center gap-2">
                           <Clock className="h-3.5 w-3.5" /> {booking.timeSlot}
@@ -257,23 +261,9 @@ export default function BookingsPage() {
                {!loadingBookings && myBookings.length === 0 && (
                 <div className="text-center py-12 opacity-30">
                   <BadgeInfo className="h-12 w-12 mx-auto mb-4" />
-                  <p className="text-xs font-bold uppercase tracking-widest">No Active Sessions</p>
+                  <p className="text-xs font-bold uppercase tracking-widest">No Active Bookings</p>
                 </div>
                )}
-             </CardContent>
-           </Card>
-
-           <Card className="border-white/5 bg-accent/10 border-accent/20 rounded-[2.5rem] overflow-hidden shadow-2xl border">
-             <CardContent className="p-10 text-center space-y-6">
-                <div className="mx-auto p-5 rounded-[2rem] bg-accent/20 w-fit relative">
-                   <BadgeInfo className="h-10 w-10 text-accent" />
-                   <div className="absolute -top-1 -right-1 h-4 w-4 bg-primary rounded-full animate-ping" />
-                </div>
-                <div>
-                  <h3 className="font-headline font-bold text-lg">Predictive Guidance</h3>
-                  <p className="text-sm text-muted-foreground mt-2 leading-relaxed">Let AI Zaya analyze your skill telemetry and recommend the optimal training path.</p>
-                </div>
-                <Button variant="outline" className="rounded-2xl border-accent/30 text-accent hover:bg-accent/10 w-full text-xs h-12 font-bold uppercase tracking-widest">Consult Zaya Assistant</Button>
              </CardContent>
            </Card>
         </div>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -45,12 +46,12 @@ import {
 
 const navItems = [
   { name: 'Overview', icon: LayoutDashboard, path: '/dashboard', roles: ['Admin', 'Technician', 'Trainee'] },
-  { name: 'Machines', icon: Cpu, path: '/dashboard/machines', roles: ['Admin', 'Technician'] },
-  { name: 'Portal', icon: Calendar, path: '/dashboard/bookings', roles: ['Trainee'] },
-  { name: 'Booking Approvals', icon: Ticket, path: '/dashboard/admin/approvals', roles: ['Admin'] },
-  { name: 'Technician Updates', icon: Activity, path: '/dashboard/technician/updates', roles: ['Technician', 'Admin'] },
-  { name: 'User Management', icon: Users, path: '/dashboard/admin/users', roles: ['Admin'] },
-  { name: 'Usage Logs', icon: History, path: '/dashboard/usage', roles: ['Admin', 'Trainee'] },
+  { name: 'Machine Fleet', icon: Cpu, path: '/dashboard/machines', roles: ['Admin', 'Technician', 'Trainee'] },
+  { name: 'Machine Booking', icon: Calendar, path: '/dashboard/bookings', roles: ['Trainee'] },
+  { name: 'Approvals', icon: Ticket, path: '/dashboard/admin/approvals', roles: ['Admin'] },
+  { name: 'System Logs', icon: History, path: '/dashboard/usage', roles: ['Admin', 'Trainee'] },
+  { name: 'Health Updates', icon: Activity, path: '/dashboard/technician/updates', roles: ['Technician', 'Admin'] },
+  { name: 'User Directory', icon: Users, path: '/dashboard/admin/users', roles: ['Admin'] },
   { name: 'Analytics', icon: BarChart3, path: '/dashboard/analytics', roles: ['Admin'] },
   { name: 'Maintenance', icon: ClipboardList, path: '/dashboard/maintenance', roles: ['Admin', 'Technician'] },
   { name: 'AI Zaya', icon: MessageSquare, path: '/dashboard/ai-zaya', roles: ['Admin', 'Technician', 'Trainee'] },
@@ -86,6 +87,11 @@ export function DashboardSidebar() {
 
   const userRole = profile?.role || 'Trainee';
   const filteredNav = navItems.filter(item => item.roles.includes(userRole));
+
+  // Role display label
+  const roleLabel = 
+    userRole === 'Admin' ? 'Admin' :
+    userRole === 'Technician' ? 'Teacher' : 'Student';
 
   return (
     <Sidebar collapsible="icon" className="border-r border-white/5 bg-sidebar">
@@ -139,7 +145,7 @@ export function DashboardSidebar() {
                   <div className="flex flex-col">
                     <span className="text-xs font-bold truncate max-w-[120px]">{profile?.name || user?.email}</span>
                     <span className="text-[10px] text-primary uppercase font-bold tracking-wider">
-                      {userRole}
+                      {roleLabel}
                     </span>
                   </div>
                 )}
@@ -148,7 +154,7 @@ export function DashboardSidebar() {
           </DropdownMenuTrigger>
           <DropdownMenuContent side="right" align="end" className="w-56 bg-card border-white/10 rounded-2xl shadow-2xl">
              <DropdownMenuLabel className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground px-4 py-3">Account</DropdownMenuLabel>
-             <DropdownMenuItem className="gap-2 px-4 py-3 cursor-default"><User className="h-4 w-4" /> {userRole} Portal</DropdownMenuItem>
+             <DropdownMenuItem className="gap-2 px-4 py-3 cursor-default"><User className="h-4 w-4" /> {roleLabel} Portal</DropdownMenuItem>
              <DropdownMenuSeparator className="bg-white/5" />
              <DropdownMenuItem className="gap-2 px-4 py-3 cursor-pointer text-red-500 hover:text-red-400" onClick={handleLogout}><LogOut className="h-4 w-4" /> Logout</DropdownMenuItem>
           </DropdownMenuContent>
