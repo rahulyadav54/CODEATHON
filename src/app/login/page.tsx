@@ -33,7 +33,7 @@ export default function LoginPage() {
   const [isAuthenticating, setIsAuthenticating] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
 
-  // Auth Guard: If already connected, push to dashboard
+  // Auth Guard: Redirect if already logged in
   useEffect(() => {
     if (user && !isAuthenticating && !authLoading) {
       router.push('/dashboard');
@@ -42,11 +42,19 @@ export default function LoginPage() {
 
   const validateForm = () => {
     if (!email || !password) {
-      toast({ variant: "destructive", title: "Validation Error", description: "Email and password are required." });
+      toast({ 
+        variant: "destructive", 
+        title: "Validation Error", 
+        description: "Credentials are required for neural link." 
+      });
       return false;
     }
     if (isSignUp && !name) {
-      toast({ variant: "destructive", title: "Validation Error", description: "Operator name is required for registration." });
+      toast({ 
+        variant: "destructive", 
+        title: "Validation Error", 
+        description: "Operator name is required for registration." 
+      });
       return false;
     }
     return true;
@@ -61,10 +69,10 @@ export default function LoginPage() {
 
     try {
       if (isSignUp) {
-        // 1. Create New Operator Node in Firebase Auth
+        // 1. Create Auth Account
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
 
-        // 2. Initialize Operator Profile in Firestore
+        // 2. Initialize Firestore Profile
         await setDoc(doc(db, 'users', userCredential.user.uid), {
           id: userCredential.user.uid,
           name: name,
@@ -75,28 +83,30 @@ export default function LoginPage() {
           createdAt: new Date().toISOString()
         });
         
-        toast({ title: "Node Established", description: "Your operator profile has been successfully registered." });
+        toast({ title: "Node Established", description: "Your operator profile is now live." });
       } else {
         // Authenticate Existing Node
         await signInWithEmailAndPassword(auth, email, password);
         toast({ title: "Access Granted", description: "Node connection verified." });
       }
       
-      // Navigation is handled by the useEffect watching auth state
+      // Reset authenticating state to allow the redirection useEffect to run
+      setIsAuthenticating(false);
+      router.push('/dashboard');
     } catch (error: any) {
-      // We do not use console.error here to avoid triggering the Next.js error overlay
+      setIsAuthenticating(false);
       let errorMessage = "Access denied by neural firewall.";
       
-      if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-        errorMessage = "Incorrect security key or credential combination.";
+      if (error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential' || error.code === 'auth/invalid-email') {
+        errorMessage = "Invalid credentials. Check your ID and security key.";
       } else if (error.code === 'auth/user-not-found') {
-        errorMessage = "Credential ID not recognized. Please sign up first.";
+        errorMessage = "Operator node not found. Please register first.";
       } else if (error.code === 'auth/email-already-in-use') {
-        errorMessage = "Credential ID already registered in the system.";
+        errorMessage = "Credential ID is already active in the system.";
       } else if (error.code === 'auth/weak-password') {
-        errorMessage = "Security key is too weak. Use at least 6 characters.";
-      } else if (error.code === 'auth/invalid-email') {
-        errorMessage = "Invalid Credential ID format.";
+        errorMessage = "Security key is too weak. Minimum 6 characters required.";
+      } else if (error.message) {
+        errorMessage = error.message;
       }
       
       toast({
@@ -104,7 +114,6 @@ export default function LoginPage() {
         title: "Auth Failure",
         description: errorMessage
       });
-      setIsAuthenticating(false);
     }
   };
 
@@ -130,9 +139,14 @@ export default function LoginPage() {
         });
       }
       toast({ title: "Google Auth Success", description: "Connection established via Google Core." });
+      setIsAuthenticating(false);
       router.push('/dashboard');
     } catch (error: any) {
-      toast({ variant: "destructive", title: "External Auth Error", description: error.message });
+      toast({ 
+        variant: "destructive", 
+        title: "External Auth Error", 
+        description: error.message || "Could not verify Google credentials." 
+      });
       setIsAuthenticating(false);
     }
   };
@@ -150,13 +164,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-[#020617] relative overflow-hidden font-body selection:bg-primary/30">
-      {/* Immersive Animated Background */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <motion.div 
           animate={{ 
             scale: [1, 1.2, 1],
-            x: [0, 50, 0],
-            y: [0, -30, 0],
             opacity: [0.15, 0.25, 0.15]
           }}
           transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
@@ -165,8 +176,6 @@ export default function LoginPage() {
         <motion.div 
           animate={{ 
             scale: [1, 1.3, 1],
-            x: [0, -40, 0],
-            y: [0, 60, 0],
             opacity: [0.1, 0.2, 0.1]
           }}
           transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
@@ -175,11 +184,9 @@ export default function LoginPage() {
       </div>
 
       <div className="w-full max-w-xl relative z-10">
-        {/* Branding Header */}
         <motion.div 
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
           className="text-center space-y-6 mb-10"
         >
           <div className="inline-flex items-center gap-3 p-2 px-5 rounded-full bg-white/5 border border-white/10 backdrop-blur-xl">
@@ -189,22 +196,20 @@ export default function LoginPage() {
             <span className="text-xl font-headline font-bold tracking-widest text-white">CODEATHON <span className="text-blue-400">AI</span></span>
           </div>
           <div className="space-y-3">
-            <h1 className="text-4xl md:text-5xl font-headline font-bold text-white tracking-tight leading-tight">
+            <h1 className="text-4xl md:text-5xl font-headline font-bold text-white tracking-tight">
               {isSignUp ? 'Establish Node' : 'Operator Access'}
             </h1>
-            <p className="text-white/40 text-sm md:text-base max-w-lg mx-auto font-light">
+            <p className="text-white/40 text-sm max-w-lg mx-auto font-light">
               Centralized Intelligence Layer for Next-Gen Skill Development
             </p>
           </div>
         </motion.div>
 
-        {/* Auth Card */}
         <motion.div
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
         >
-          <Card className="border-white/10 bg-black/40 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden shadow-2xl border relative">
+          <Card className="border-white/10 bg-black/40 backdrop-blur-3xl rounded-[2.5rem] overflow-hidden shadow-2xl border">
             <CardContent className="p-8 md:p-14 space-y-8">
               <form onSubmit={handleAuth} className="space-y-7">
                 <AnimatePresence mode="wait">
@@ -224,8 +229,7 @@ export default function LoginPage() {
                             placeholder="Full Name" 
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 text-sm focus:ring-blue-500/30 transition-all focus:border-blue-500/50"
-                            required={isSignUp}
+                            className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 text-sm focus:ring-blue-500/30"
                           />
                         </div>
                       </div>
@@ -242,14 +246,14 @@ export default function LoginPage() {
                             { id: 'Trainer', label: 'Shield', icon: ShieldCheck },
                             { id: 'Admin', label: 'Overlord', icon: Settings }
                           ].map((item) => (
-                            <div key={item.id} className="relative">
+                            <div key={item.id}>
                               <RadioGroupItem value={item.id} id={item.id} className="sr-only" />
                               <Label
                                 htmlFor={item.id}
                                 className={cn(
-                                  "flex flex-col items-center justify-center gap-3 p-4 rounded-2xl border cursor-pointer transition-all h-full",
+                                  "flex flex-col items-center justify-center gap-3 p-4 rounded-2xl border cursor-pointer transition-all",
                                   role === item.id 
-                                    ? "bg-blue-600/10 border-blue-500/50 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.1)]" 
+                                    ? "bg-blue-600/10 border-blue-500/50 text-blue-400" 
                                     : "bg-white/[0.02] border-white/5 text-white/30 hover:bg-white/5"
                                 )}
                               >
@@ -275,8 +279,7 @@ export default function LoginPage() {
                         placeholder="operator@codeathon.ai" 
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 text-sm focus:ring-blue-500/30 transition-all focus:border-blue-500/50"
-                        required
+                        className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 text-sm focus:ring-blue-500/30"
                       />
                     </div>
                   </div>
@@ -290,8 +293,7 @@ export default function LoginPage() {
                         placeholder="••••••••" 
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 text-sm focus:ring-blue-500/30 transition-all focus:border-blue-500/50"
-                        required
+                        className="pl-14 bg-white/[0.03] border-white/10 rounded-2xl h-14 text-sm focus:ring-blue-500/30"
                       />
                     </div>
                   </div>
@@ -299,15 +301,15 @@ export default function LoginPage() {
 
                 <div className="flex items-center justify-between ml-1">
                    <div className="flex items-center space-x-2">
-                      <Checkbox id="remember" checked={rememberMe} onCheckedChange={(v: any) => setRememberMe(v)} className="border-white/10" />
+                      <Checkbox id="remember" checked={rememberMe} onCheckedChange={(v: any) => setRememberMe(v)} />
                       <label htmlFor="remember" className="text-xs text-white/40">Remember Node</label>
                    </div>
-                   <button type="button" className="text-[10px] uppercase font-bold text-blue-400/40 hover:text-blue-400 transition-colors">Recover Key</button>
+                   <button type="button" className="text-[10px] uppercase font-bold text-blue-400/40 hover:text-blue-400">Recover Key</button>
                 </div>
 
                 <Button 
                   type="submit" 
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 border-0 rounded-2xl h-16 font-bold transition-all text-white group shadow-xl shadow-blue-900/20" 
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 border-0 rounded-2xl h-16 font-bold text-white group" 
                   disabled={isAuthenticating}
                 >
                   {isAuthenticating ? (
@@ -326,12 +328,12 @@ export default function LoginPage() {
 
               <div className="relative py-4">
                 <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-white/5"></span></div>
-                <div className="relative flex justify-center text-[9px] uppercase font-bold tracking-[0.3em]"><span className="bg-[#020617]/50 px-4 text-white/20">Secure External Auth</span></div>
+                <div className="relative flex justify-center text-[9px] uppercase font-bold tracking-[0.3em]"><span className="bg-background/50 px-4 text-white/20">Secure External Auth</span></div>
               </div>
 
               <Button 
                 variant="outline" 
-                className="w-full border-white/10 rounded-2xl h-14 bg-white/[0.02] hover:bg-white/5 text-white/60 flex items-center justify-center gap-3 font-semibold text-sm transition-colors" 
+                className="w-full border-white/10 rounded-2xl h-14 bg-white/[0.02] hover:bg-white/5 text-white/60 flex items-center justify-center gap-3" 
                 onClick={loginWithGoogle} 
                 disabled={isAuthenticating}
               >
@@ -347,7 +349,7 @@ export default function LoginPage() {
               <div className="text-center">
                 <button 
                   onClick={() => setIsSignUp(!isSignUp)}
-                  className="text-[10px] uppercase font-bold tracking-[0.2em] text-white/30 hover:text-blue-400 transition-all"
+                  className="text-[10px] uppercase font-bold tracking-[0.2em] text-white/30 hover:text-blue-400"
                 >
                   {isSignUp ? 'Connection exists? Initialize' : 'New Node? Establish Deployment'}
                 </button>

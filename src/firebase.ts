@@ -24,7 +24,6 @@ const firebaseConfig = {
 // Initialize Firebase (Singleton Pattern)
 function getFirebaseApp(): FirebaseApp {
   if (getApps().length > 0) return getApp();
-  console.log("Firebase Node: Initializing connection...");
   return initializeApp(firebaseConfig);
 }
 
@@ -41,7 +40,6 @@ export function useUser() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      console.log("Auth State Changed:", user ? `Operator ${user.email} connected` : "No operator connected");
       setUser(user);
       setLoading(false);
     });
@@ -73,7 +71,6 @@ export function useDoc(docRef: DocumentReference | null) {
         setLoading(false);
       },
       (err) => {
-        console.error("Firestore sync error:", err);
         setError(err);
         setLoading(false);
       }
@@ -107,7 +104,6 @@ export function useCollection(query: Query | null) {
         setLoading(false);
       },
       (err) => {
-        console.error("Collection sync error:", err);
         setError(err);
         setLoading(false);
       }
