@@ -1,0 +1,46 @@
+
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Extended user information including roles and skill levels.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["Admin", "Trainer", "Student"] },
+        "skillLevel": { "type": "string", "enum": ["Beginner", "Intermediate", "Expert"] },
+        "totalHours": { "type": "number" }
+      },
+      "required": ["id", "name", "email", "role"]
+    },
+    "Machine": {
+      "title": "Machine",
+      "description": "Equipment telemetry and status.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "centerId": { "type": "string" },
+        "status": { "type": "string", "enum": ["Available", "In Use", "Under Maintenance"] },
+        "usageHours": { "type": "number" },
+        "healthScore": { "type": "number" }
+      }
+    }
+  },
+  "auth": {
+    "providers": ["google.com", "password"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "#/entities/UserProfile",
+      "description": "User profile data."
+    },
+    "/machines/{machineId}": {
+      "schema": "#/entities/Machine",
+      "description": "Fleet inventory data."
+    }
+  }
+}

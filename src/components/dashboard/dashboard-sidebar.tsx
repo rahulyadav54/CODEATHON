@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from 'next/link';
@@ -15,7 +16,8 @@ import {
   UserCircle,
   ChevronRight,
   MoreVertical,
-  LogOut
+  LogOut,
+  Loader2
 } from 'lucide-react';
 import {
   Sidebar,
@@ -28,8 +30,10 @@ import {
   useSidebar
 } from '@/components/ui/sidebar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { MockDB, UserRole } from '@/lib/mock-data';
-import { useState, useEffect } from 'react';
+import { useAuth, useFirestore, useUser, useDoc } from '@/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
+import { signOut } from 'firebase/auth';
+import { useState, useEffect, useMemo } from 'react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 
 const navItems = [
@@ -46,30 +50,40 @@ export function DashboardSidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const { state } = useSidebar();
-  const [role, setRole] = useState<UserRole | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const auth = useAuth();
+  const db = useFirestore();
+  const { user, loading: authLoading } = useUser();
+  
+  const userRef = useMemo(() => {
+    if (!db || !user?.uid) return null;
+    return doc(db, 'users', user.uid);
+  }, [db, user?.uid]);
 
-  useEffect(() => {
-    setRole(MockDB.currentUser.role);
-    setMounted(true);
-  }, []);
+  const { data: profile, loading: profileLoading } = useDoc(userRef);
 
-  const handleRoleSwitch = (newRole: UserRole) => {
-    MockDB.setCurrentUser(newRole);
-    setRole(newRole);
-    window.location.reload(); 
+  const handleRoleSwitch = async (newRole: string) => {
+    if (!userRef) return;
+    await updateDoc(userRef, { role: newRole });
   };
 
-  const handleLogout = () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('skillmach_current_user_id');
-      router.push('/login');
-    }
+  const handleLogout = async () => {
+    if (!auth) return;
+    await signOut(auth);
+    router.push('/login');
   };
 
-  if (!mounted || !role) return null;
+  if (authLoading || profileLoading) {
+    return (
+      <Sidebar collapsible="icon" className="border-r border-white/5 bg-sidebar">
+        <div className="flex items-center justify-center h-full">
+          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+        </div>
+      </Sidebar>
+    );
+  }
 
-  const filteredNav = navItems.filter(item => item.roles.includes(role));
+  const userRole = profile?.role || 'Student';
+  const filteredNav = navItems.filter(item => item.roles.includes(userRole));
 
   return (
     <Sidebar collapsible="icon" className="border-r border-white/5 bg-sidebar">
@@ -116,13 +130,13 @@ export function DashboardSidebar() {
             <div className="flex items-center justify-between group cursor-pointer hover:bg-white/5 p-2 rounded-xl transition-colors">
               <div className="flex items-center gap-3">
                 <Avatar className="h-8 w-8 border border-primary/20">
-                  <AvatarImage src={`https://picsum.photos/seed/${role}/40/40`} />
-                  <AvatarFallback>{role[0]}</AvatarFallback>
+                  <AvatarImage src={user?.photoURL || `https://picsum.photos/seed/${user?.uid}/40/40`} />
+                  <AvatarFallback>{profile?.name?.[0] || 'U'}</AvatarFallback>
                 </Avatar>
                 {state !== 'collapsed' && (
                   <div className="flex flex-col">
-                    <span className="text-xs font-bold">{MockDB.currentUser.name}</span>
-                    <span className="text-[10px] text-primary uppercase font-bold tracking-wider">{role}</span>
+                    <span className="text-xs font-bold truncate max-w-[120px]">{profile?.name || user?.email}</span>
+                    <span className="text-[10px] text-primary uppercase font-bold tracking-wider">{userRole}</span>
                   </div>
                 )}
               </div>
