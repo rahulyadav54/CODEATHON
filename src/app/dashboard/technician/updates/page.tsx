@@ -62,7 +62,7 @@ export default function TechnicianUpdatesPage() {
     );
   }, [machines]);
 
-  const handleUpdate = (e: React.FormEvent) => {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!db || !selectedMachineId || !user || !profile) {
       toast({
@@ -92,35 +92,34 @@ export default function TechnicianUpdatesPage() {
       updatedAt: serverTimestamp()
     };
 
-    // Parallel mutations: Machine Telemetry + Audit Log
-    setDoc(machineRef, updateData, { merge: true })
-      .then(() => {
-        // Success feedback
-        toast({ 
-          title: "Node Synchronized", 
-          description: `Telemetry for ${selectedMachine?.name || selectedMachineId} stored successfully.`,
-          className: "bg-green-600 text-white font-bold border-green-700",
-        });
-      })
-      .catch((err) => {
-        toast({
-          variant: "destructive",
-          title: "Uplink Failed",
-          description: "Database connection interrupted."
-        });
-      })
-      .finally(() => setIsUpdating(false));
+    try {
+      // Parallel mutations
+      await setDoc(machineRef, updateData, { merge: true });
+      await addDoc(collection(db, 'usageLogs'), {
+        machineId: selectedMachineId,
+        machineName: selectedMachine?.name || selectedMachineId,
+        userId: user.uid,
+        userName: profile.name || user.email || 'Technician',
+        startTime: new Date().toISOString(),
+        type: 'Telemetry Update',
+        status: 'Success',
+        createdAt: serverTimestamp()
+      });
 
-    addDoc(collection(db, 'usageLogs'), {
-      machineId: selectedMachineId,
-      machineName: selectedMachine?.name || selectedMachineId,
-      userId: user.uid,
-      userName: profile.name || user.email || 'Technician',
-      startTime: new Date().toISOString(),
-      type: 'Telemetry Update',
-      status: 'Success',
-      createdAt: serverTimestamp()
-    });
+      toast({ 
+        title: "Node Synchronized", 
+        description: `Telemetry for ${selectedMachine?.name || selectedMachineId} stored successfully.`,
+        className: "bg-green-600 text-white font-bold border-green-700",
+      });
+    } catch (err: any) {
+      toast({
+        variant: "destructive",
+        title: "Uplink Failed",
+        description: err.message || "Database connection interrupted."
+      });
+    } finally {
+      setIsUpdating(false);
+    }
   };
 
   return (
