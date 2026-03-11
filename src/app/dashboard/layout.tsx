@@ -1,4 +1,3 @@
-
 "use client";
 
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar';
@@ -9,6 +8,7 @@ import { useUser, useFirestore, useDoc } from '@/firebase';
 import { useRouter, usePathname } from 'next/navigation';
 import { useEffect, useMemo } from 'react';
 import { doc } from 'firebase/firestore';
+import { SensorSimulator } from '@/components/dashboard/sensor-simulator';
 
 export default function DashboardLayout({
   children,
@@ -37,14 +37,12 @@ export default function DashboardLayout({
       
       // Admin area protection
       if (pathname.includes('/admin') && role !== 'Admin') {
-        // Exception: Allow Technician (Teacher) to access Approvals page specifically
         if (pathname === '/dashboard/admin/approvals' && role === 'Technician') {
           return;
         }
         router.push('/dashboard');
       }
       
-      // Technician/Teacher area protection
       if (pathname.includes('/technician') && (role !== 'Technician' && role !== 'Admin')) {
         router.push('/dashboard');
       }
@@ -97,6 +95,10 @@ export default function DashboardLayout({
               {children}
             </div>
           </main>
+          {/* Simulation Module - Visible to Admins and Technicians */}
+          {(profile.role === 'Admin' || profile.role === 'Technician') && (
+            <SensorSimulator />
+          )}
         </SidebarInset>
       </div>
     </SidebarProvider>
